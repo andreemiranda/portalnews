@@ -26,12 +26,10 @@ import {
 
 export default function HomePage() {
   const [news, setNews] = useState<NewsItem[]>([]);
-  const [pendingNews, setPendingNews] = useState<NewsItem[] | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [lastUpdatedTime, setLastUpdatedTime] = useState<string>('');
-  const [realtimeNotification, setRealtimeNotification] = useState<string | null>(null);
 
   // Filters & Views
   const [activeCategory, setActiveCategory] = useState<string>('all');
@@ -120,15 +118,6 @@ export default function HomePage() {
     });
   };
 
-  // Handler to apply real-time detected news when user explicitly wants to
-  const applyPendingNews = useCallback(() => {
-    if (pendingNews && pendingNews.length > 0) {
-      setNews(pendingNews);
-      setPendingNews(null);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-  }, [pendingNews]);
-
   // Main News Fetcher function
   const fetchNews = useCallback(
     async (category = activeCategory, force = false, silent = false) => {
@@ -157,24 +146,10 @@ export default function HomePage() {
         const data = await res.json();
         const incomingItems: NewsItem[] = data.items || [];
 
-        if (silent) {
-          // Em tempo real em segundo plano: NÃO troca de repente as notícias no feed!
-          // Compara com os itens atuais. Se houver novidades, armazena em pendingNews
-          // para serem aplicadas apenas se o usuário clicar ou na próxima troca de editoria.
-          setNews((currentNews) => {
-            if (incomingItems.length > 0 && currentNews.length > 0) {
-              const currentIds = new Set(currentNews.map((i) => i.id));
-              const hasNewArticles = incomingItems.some((i) => !currentIds.has(i.id));
-              if (hasNewArticles || incomingItems[0]?.id !== currentNews[0]?.id) {
-                setPendingNews(incomingItems);
-              }
-            }
-            return currentNews; // Mantém o feed na tela 100% estável sem saltos
-          });
-        } else {
-          // Troca imediatamente apenas quando atualizar a página, no reinício ou ao clicar em atualizar/trocar editoria
+        // O feed visível só é substituído em ações deliberadas (carregamento, troca de editoria ou clique em atualizar),
+        // mantendo a leitura 100% estável sem trocar de repente.
+        if (!silent) {
           setNews(incomingItems);
-          setPendingNews(null);
         }
 
         lastFetchTimestamp.current = Date.now();
@@ -223,7 +198,6 @@ export default function HomePage() {
       .then((data) => {
         if (isMounted) {
           setNews(data.items || []);
-          setPendingNews(null);
           lastFetchTimestamp.current = Date.now();
           const now = new Date();
           const formattedTime = now.toLocaleTimeString('pt-BR', {
@@ -364,47 +338,6 @@ export default function HomePage() {
         setActiveCategory={setActiveCategory}
         counts={categoryCounts}
       />
-
-      {/* Real-time Toast Notification */}
-      {realtimeNotification && (
-        <div className="fixed bottom-6 right-6 z-50 bg-emerald-600 text-white px-4 py-3 rounded-2xl shadow-2xl flex items-center gap-3 animate-bounce">
-          <Radio className="w-4 h-4 animate-pulse" />
-          <span className="text-xs font-bold">{realtimeNotification}</span>
-        </div>
-      )}
-
-      {/* Real-time New Articles Available Banner (Non-disruptive) */}
-      {pendingNews && pendingNews.length > 0 && (
-        <div className="sticky top-14 z-30 max-w-7xl mx-auto px-4 sm:px-6 pt-3 animate-fadeIn">
-          <div className="bg-gradient-to-r from-red-600 to-red-700 text-white px-4 sm:px-5 py-3 rounded-2xl shadow-xl flex flex-col sm:flex-row items-center justify-between gap-3 border border-red-500/80">
-            <div className="flex items-center gap-3 text-xs sm:text-sm font-bold text-center sm:text-left">
-              <span className="relative flex h-3 w-3 shrink-0">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-300 opacity-75" />
-                <span className="relative inline-flex rounded-full h-3 w-3 bg-amber-400" />
-              </span>
-              <span>Novas notícias recebidas em tempo real!</span>
-              <span className="text-red-100 text-xs font-normal hidden md:inline">
-                (O feed atual foi mantido intacto para sua leitura não ser interrompida)
-              </span>
-            </div>
-            <div className="flex items-center gap-2 shrink-0">
-              <button
-                onClick={applyPendingNews}
-                className="bg-white text-red-700 hover:bg-zinc-100 px-4 py-1.5 rounded-xl text-xs font-black transition shadow-sm cursor-pointer whitespace-nowrap active:scale-95"
-              >
-                Atualizar Feed Agora
-              </button>
-              <button
-                onClick={() => setPendingNews(null)}
-                className="text-red-200 hover:text-white text-xs px-2 py-1 cursor-pointer"
-                title="Dispensar aviso"
-              >
-                ✕
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Main Content Area */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 py-8 space-y-8">
