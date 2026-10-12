@@ -82,8 +82,6 @@ export const FeaturedNews: React.FC<FeaturedNewsProps> = ({
               <span className="flex items-center gap-1">
                 <Clock className="w-3.5 h-3.5" /> {item.timeAgo}
               </span>
-              <span>•</span>
-              <span className="font-semibold">{item.source}</span>
             </div>
           </div>
         </div>
@@ -91,7 +89,7 @@ export const FeaturedNews: React.FC<FeaturedNewsProps> = ({
         {/* Caption bar immediately below image */}
         <div className="px-6 py-2 bg-slate-50 dark:bg-zinc-800/40 border-b border-slate-100 dark:border-zinc-800">
           <p className="text-xs text-slate-500 dark:text-zinc-400 italic font-sans leading-tight border-l-2 border-red-600 pl-2">
-            Foto: {item.imageCaption || `Divulgação / ${item.source} — ${item.title}`}
+            Foto: {item.imageCaption || `Registro editorial — ${item.title}`}
           </p>
         </div>
 
@@ -134,7 +132,7 @@ export const FeaturedNews: React.FC<FeaturedNewsProps> = ({
             </div>
 
             <span className="text-xs font-semibold text-slate-400 dark:text-zinc-500">
-              {item.source}
+              Destaque Principal
             </span>
           </div>
         </div>

@@ -10,7 +10,6 @@ import {
   X,
   Bookmark,
   Share2,
-  ExternalLink,
   Sparkles,
   Play,
   Pause,
@@ -287,9 +286,6 @@ export const ReaderModal: React.FC<ReaderModalProps> = ({
             <span className="bg-red-600 text-white text-[11px] font-black uppercase tracking-wider px-3 py-1 rounded-full">
               {item.category}
             </span>
-            <span className="text-xs text-zinc-500 font-medium">
-              Fonte: {item.source || 'Portal News'}
-            </span>
           </div>
 
           <div className="flex items-center gap-2">
@@ -535,20 +531,6 @@ export const ReaderModal: React.FC<ReaderModalProps> = ({
                 <span>Compartilhar</span>
               </button>
             </div>
-
-            {/* Only element linking to external original source */}
-            {item.link && item.link !== '#' && (
-              <a
-                href={item.link}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-xs text-zinc-500 hover:text-red-600 transition flex items-center gap-1"
-                title="Acessar publicação original no site da fonte"
-              >
-                <span>Acessar fonte original ({item.source})</span>
-                <ExternalLink className="w-3.5 h-3.5" />
-              </a>
-            )}
           </div>
         </div>
       </div>

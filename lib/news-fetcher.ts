@@ -31,22 +31,35 @@ export const DEFAULT_ALL_SOURCE_IDS = [
   '914761953262293', // Finanças
 ];
 
-function formatTimeAgo(dateString?: string): string {
+function formatTimeAgo(dateString?: string, rawTimeAgo?: string): string {
+  const candidate = rawTimeAgo || dateString;
+  if (candidate && typeof candidate === 'string') {
+    // Normaliza abreviações legadas ou de feeds externos ("3 hras" -> "3 horas", "1 h" -> "1 hora")
+    if (/\b\d+\s*(hras?|h|mins?)\b/i.test(candidate)) {
+      return candidate
+        .replace(/\b(\d+)\s*hras?\b/gi, '$1 horas')
+        .replace(/\b(\d+)\s*h\b/gi, '$1 horas')
+        .replace(/\b1\s+horas\b/gi, '1 hora')
+        .replace(/\b(\d+)\s*mins?\b/gi, '$1 minutos')
+        .replace(/\b1\s+minutos\b/gi, '1 minuto');
+    }
+  }
+
   if (!dateString) return 'Recente';
   const date = new Date(dateString);
   if (isNaN(date.getTime())) return 'Recente';
 
   const now = new Date();
-  const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+  const diffInSeconds = Math.max(0, Math.floor((now.getTime() - date.getTime()) / 1000));
 
   if (diffInSeconds < 60) return 'Agora mesmo';
   if (diffInSeconds < 3600) {
     const mins = Math.floor(diffInSeconds / 60);
-    return `Há ${mins} min${mins > 1 ? 's' : ''}`;
+    return `Há ${mins} ${mins === 1 ? 'minuto' : 'minutos'}`;
   }
   if (diffInSeconds < 86400) {
     const hours = Math.floor(diffInSeconds / 3600);
-    return `Há ${hours} h${hours > 1 ? 'ras' : ''}`;
+    return `Há ${hours} ${hours === 1 ? 'hora' : 'horas'}`;
   }
   const days = Math.floor(diffInSeconds / 86400);
   if (days === 1) return 'Ontem';
@@ -250,9 +263,13 @@ async function fetchFromUpstreamSource(source: NewsApiSourceItem): Promise<NewsI
       .replace(/\bo\s+liberal\b/gi, '')
       .replace(/\bdi[aá]rio\s+do\s+par[aá]\b/gi, '')
       .replace(/\bdol\b/gi, '')
+      .replace(/coluna\s+do\s+ct/gi, '')
+      .replace(/cleber\s+toledo/gi, '')
+      .replace(/esporte\s+news\s+mundo/gi, '')
+      .replace(/\s+/g, ' ')
       .trim();
 
-    if (!rawAuthor || rawAuthor.length < 3 || /^(admin|redacao|g1)$/i.test(rawAuthor)) {
+    if (!rawAuthor || rawAuthor.length < 3 || /^(admin|redacao|g1)$/i.test(rawAuthor) || /^\d+$/.test(rawAuthor)) {
       rawAuthor = 'Redação Portal News';
     }
 
@@ -263,14 +280,14 @@ async function fetchFromUpstreamSource(source: NewsApiSourceItem): Promise<NewsI
       link: item.link || '#',
       pubDate,
       isoDate: pubDate,
-      timeAgo: formatTimeAgo(pubDate),
+      timeAgo: formatTimeAgo(pubDate, item.timeAgo),
       category: source.category,
       categoryId: source.category,
-      source: source.name || source.site || 'Portal News',
+      source: 'Portal News',
       summary: decodeHtmlEntities(cleanSummaryText),
       contentHtml: decodeHtmlEntities(cleanFullContent),
       imageUrl,
-      imageCaption: imageUrl ? `Registro original da fonte • ${source.category} / Portal News` : undefined,
+      imageCaption: imageUrl ? `Registro jornalístico editorial • ${source.category}` : undefined,
       author: decodeHtmlEntities(rawAuthor),
     });
   }

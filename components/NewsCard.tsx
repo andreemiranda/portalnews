@@ -82,7 +82,7 @@ export const NewsCard: React.FC<NewsCardProps> = ({
           </div>
 
           <div className="flex items-center justify-between mt-3 pt-2 border-t border-slate-100 dark:border-zinc-800">
-            <span className="text-[11px] text-slate-400 font-semibold truncate max-w-[140px]">{item.source}</span>
+            <span className="text-[11px] text-red-600 dark:text-red-400 font-bold group-hover:underline">Ler matéria →</span>
             <div className="flex items-center gap-2">
               <button
                 onClick={(e) => {
@@ -183,8 +183,6 @@ export const NewsCard: React.FC<NewsCardProps> = ({
             <span className="flex items-center gap-1">
               <Clock className="w-3.5 h-3.5" /> {item.timeAgo}
             </span>
-            <span>•</span>
-            <span className="truncate">{item.source}</span>
           </div>
 
           <h3

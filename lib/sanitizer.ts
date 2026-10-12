@@ -314,6 +314,9 @@ export function cleanFullNewsText(input?: string): string {
       .replace(/\bg1\b/gi, '')
       .replace(/\bo\s+liberal\b/gi, 'Portal News')
       .replace(/\bdi[aá]rio\s+do\s+par[aá]\b/gi, 'Portal News')
+      .replace(/\bcoluna\s+do\s+ct\b/gi, '')
+      .replace(/\bcleber\s+toledo\b/gi, '')
+      .replace(/\besporte\s+news\s+mundo\b/gi, '')
       .replace(/\s+/g, ' ')
       .trim();
 
