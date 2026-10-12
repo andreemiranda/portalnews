@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+Disallow: /api/
+
+Sitemap: https://ais-dev-qyzbaiotwmw74wkgcp56qo-771752383788.us-east1.run.app/sitemap.xml
+Sitemap: https://ais-dev-qyzbaiotwmw74wkgcp56qo-771752383788.us-east1.run.app/sitemap-posts.xml
+Sitemap: https://ais-dev-qyzbaiotwmw74wkgcp56qo-771752383788.us-east1.run.app/sitemap-categories.xml
+Sitemap: https://ais-dev-qyzbaiotwmw74wkgcp56qo-771752383788.us-east1.run.app/sitemap-images.xml
+Sitemap: https://ais-dev-qyzbaiotwmw74wkgcp56qo-771752383788.us-east1.run.app/sitemap-pages.xml

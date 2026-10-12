@@ -1,0 +1,118 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@layer utilities {
+  @keyframes marquee {
+    0% { transform: translateX(0%); }
+    100% { transform: translateX(-50%); }
+  }
+
+  .animate-marquee {
+    display: flex;
+    width: max-content;
+    animation: marquee 85s linear infinite;
+  }
+
+  .animate-marquee:hover {
+    animation-play-state: paused;
+  }
+}
+
+/* Custom newspaper styling options */
+body {
+  font-feature-settings: "rlig" 1, "calt" 1;
+}
+
+/* ==============================================================================
+   1. Barra de rolagem do lado direito (Vertical) na cor vermelha do site
+   ============================================================================== */
+html {
+  scrollbar-color: #dc2626 #f4f4f5;
+  scrollbar-width: thin;
+}
+
+html.dark,
+.dark {
+  scrollbar-color: #dc2626 #18181b;
+}
+
+/* WebKit / Chromium - Barra de rolagem vertical (lado direito) */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f4f4f5;
+}
+
+.dark ::-webkit-scrollbar-track,
+html.dark ::-webkit-scrollbar-track {
+  background: #18181b;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #dc2626;
+  border-radius: 9999px;
+  border: 2px solid #f4f4f5;
+}
+
+.dark ::-webkit-scrollbar-thumb,
+html.dark ::-webkit-scrollbar-thumb {
+  background: #dc2626;
+  border: 2px solid #18181b;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #b91c1c;
+}
+
+::-webkit-scrollbar-thumb:active {
+  background: #991b1b;
+}
+
+/* ==============================================================================
+   2. Barra de rolagem horizontal no menu superior na cor vermelha
+   ============================================================================== */
+.scrollbar-menu-red {
+  scrollbar-color: #dc2626 rgba(220, 38, 38, 0.12);
+  scrollbar-width: thin;
+  overflow-x: auto;
+  scroll-behavior: smooth;
+}
+
+.dark .scrollbar-menu-red,
+html.dark .scrollbar-menu-red {
+  scrollbar-color: #dc2626 rgba(220, 38, 38, 0.25);
+}
+
+.scrollbar-menu-red::-webkit-scrollbar {
+  height: 6px;
+  width: 6px;
+}
+
+.scrollbar-menu-red::-webkit-scrollbar-track {
+  background: rgba(220, 38, 38, 0.08);
+  border-radius: 9999px;
+  margin: 0 4px;
+}
+
+.dark .scrollbar-menu-red::-webkit-scrollbar-track,
+html.dark .scrollbar-menu-red::-webkit-scrollbar-track {
+  background: rgba(220, 38, 38, 0.2);
+  border-radius: 9999px;
+}
+
+.scrollbar-menu-red::-webkit-scrollbar-thumb {
+  background: #dc2626;
+  border-radius: 9999px;
+  box-shadow: 0 1px 3px rgba(220, 38, 38, 0.3);
+}
+
+.scrollbar-menu-red::-webkit-scrollbar-thumb:hover {
+  background: #b91c1c;
+}
+
+.scrollbar-menu-red::-webkit-scrollbar-thumb:active {
+  background: #991b1b;
+}

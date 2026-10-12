@@ -1,0 +1,6 @@
+{
+  "name": "Portal News PA",
+  "description": "Portal de notícias em tempo real com feeds de Economia, Justiça, Política, Educação, Tecnologia, Esportes e estados brasileiros, com áudio e cobertura completa.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
