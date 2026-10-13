@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getLiveNews } from '@/lib/news-fetcher';
+import { sanitizePublicData } from '@/lib/security';
 
 export const dynamic = 'force-dynamic';
 
@@ -18,13 +19,15 @@ export async function GET(req: NextRequest) {
       forceRefresh,
     });
 
-    return NextResponse.json({
+    const payload = {
       items,
       source: 'upstream',
       total: items.length,
       isRealTime: true,
       updatedAt: new Date().toISOString(),
-    });
+    };
+
+    return NextResponse.json(sanitizePublicData(payload));
   } catch (err: any) {
     console.error('API news error:', err);
     return NextResponse.json(

@@ -6,6 +6,7 @@ import { OptimizedImage } from './OptimizedImage';
 import { AdSenseBanner } from './AdSenseBanner';
 import { SITE_CONFIG } from '@/lib/site-config';
 import { slugify } from '@/lib/slug';
+import { removeTruncationMarkers } from '@/lib/sanitizer';
 import {
   X,
   Bookmark,
@@ -49,6 +50,7 @@ export const ReaderModal: React.FC<ReaderModalProps> = ({
   const [aiSummary, setAiSummary] = useState<AISummaryData | null>(null);
   const [isAiEnabled, setIsAiEnabled] = useState<boolean>(false);
   const [copiedLink, setCopiedLink] = useState(false);
+  const [fetchedArticle, setFetchedArticle] = useState<{ id: string; content: string } | null>(null);
 
   // Audio Speech state
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
@@ -125,6 +127,23 @@ export const ReaderModal: React.FC<ReaderModalProps> = ({
             setAiSummary(null);
           }
         });
+
+      if ((!item.contentHtml || item.contentHtml.length < 500) && item.link && item.link.startsWith('http')) {
+        fetch(
+          `/api/news/article?url=${encodeURIComponent(item.link)}&title=${encodeURIComponent(
+            item.title
+          )}&category=${encodeURIComponent(item.category)}&text=${encodeURIComponent(
+            item.summary || ''
+          )}`
+        )
+          .then((res) => (res.ok ? res.json() : null))
+          .then((data) => {
+            if (!isCancelled && data?.contentHtml && data.contentHtml.length > 250) {
+              setFetchedArticle({ id: item.id, content: data.contentHtml });
+            }
+          })
+          .catch(() => {});
+      }
     }
 
     return () => {
@@ -488,16 +507,22 @@ export const ReaderModal: React.FC<ReaderModalProps> = ({
             </h3>
             <div className={`prose dark:prose-invert max-w-none text-zinc-800 dark:text-zinc-200 ${fontClasses[fontSize]}`}>
               {(() => {
-                const rawText = (item.contentHtml || item.summary || item.title || '').trim();
+                const currentContent =
+                  (fetchedArticle?.id === item.id ? fetchedArticle.content : null) ||
+                  item.contentHtml ||
+                  item.summary ||
+                  item.title ||
+                  '';
+                const rawText = currentContent.trim();
                 const paragraphs = rawText
                   .split(/\n\s*\n|\r?\n/)
-                  .map((p) => p.trim())
+                  .map((p) => removeTruncationMarkers(p.trim()))
                   .filter((p) => p.length > 0);
 
                 if (paragraphs.length === 0) {
                   return (
                     <p className="mb-4 leading-relaxed text-justify">
-                      {item.title}
+                      {removeTruncationMarkers(item.title)}
                     </p>
                   );
                 }

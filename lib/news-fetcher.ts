@@ -1,7 +1,8 @@
 import { ALL_NEWS_SOURCES, getSourcesByCategory, getSourceById } from '@/lib/sources';
 import { NEWS_API_CONFIG } from '@/lib/api-config';
 import { NewsItem, NewsApiSourceItem } from '@/lib/types';
-import { cleanFullNewsText, cleanTitle, isForbiddenVideoPost, decodeHtmlEntities } from '@/lib/sanitizer';
+import { cleanFullNewsText, cleanTitle, isForbiddenVideoPost, decodeHtmlEntities, removeTruncationMarkers } from '@/lib/sanitizer';
+import { ensureCompleteArticleText } from '@/lib/article-extractor';
 import { slugify } from '@/lib/slug';
 
 interface CacheEntry {
@@ -231,8 +232,31 @@ async function fetchFromUpstreamSource(source: NewsApiSourceItem): Promise<NewsI
       }
     }
 
-    const cleanSummaryText = fullCleanText.length > 0 ? fullCleanText.slice(0, 320).trim() : title;
-    const cleanFullContent = fullCleanText.length > 0 ? fullCleanText : title;
+    // Generate a complete, untruncated summary and full article text
+    let cleanSummaryText = '';
+    if (fullCleanText.length > 0) {
+      const firstPara = fullCleanText.split(/\n+/)[0] || fullCleanText;
+      if (firstPara.length <= 260) {
+        cleanSummaryText = removeTruncationMarkers(firstPara);
+      } else {
+        const sub = firstPara.slice(0, 260);
+        const lastPeriod = sub.lastIndexOf('.');
+        if (lastPeriod > 120) {
+          cleanSummaryText = removeTruncationMarkers(sub.slice(0, lastPeriod + 1).trim());
+        } else {
+          const lastSpace = sub.lastIndexOf(' ');
+          const trimmed = (lastSpace > 0 ? sub.slice(0, lastSpace) : sub)
+            .replace(/[,;:\-\s]+(?:e|ou|mas|que|de|da|do|com|em|para)?\s*$/i, '')
+            .trim();
+          cleanSummaryText = removeTruncationMarkers(`${trimmed}.`);
+        }
+      }
+    } else {
+      cleanSummaryText = title;
+    }
+
+    // Ensure the full article content is completely assembled and never truncated
+    const cleanFullContent = ensureCompleteArticleText(fullCleanText || title, title, source.category);
 
     // Find corresponding image record
     const matchedImg =

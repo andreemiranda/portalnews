@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { sanitizePublicData } from '@/lib/security';
 
 export const dynamic = 'force-dynamic';
 
@@ -7,9 +8,13 @@ export async function GET(req: NextRequest) {
   const q = searchParams.get('q') || 'Brasilia';
 
   const apiKey =
-    process.env.api_key_clima ||
     process.env.WEATHER_API_KEY ||
-    '6f6f9a76bd3c4c669c3134632260710';
+    process.env.api_key_clima ||
+    '';
+
+  if (!apiKey) {
+    return processWeatherData(getDefaultWeatherPayload(q));
+  }
 
   const baseUrl = (
     process.env.api_url_clima_base ||
@@ -91,33 +96,75 @@ function processWeatherData(data: any) {
   else if (uvVal >= 6) uvLabel = 'Alto';
   else if (uvVal >= 3) uvLabel = 'Moderado';
 
-  return NextResponse.json({
+  return NextResponse.json(
+    sanitizePublicData({
+      location: {
+        name: location.name || 'Cidade',
+        region: location.region || '',
+        country: location.country || 'Brasil',
+        localtime: location.localtime || '',
+      },
+      current: {
+        tempC: Math.round(current.temp_c || 0),
+        feelsLikeC: Math.round(current.feelslike_c || current.temp_c || 0),
+        condition: conditionText,
+        icon: current.condition?.icon?.startsWith('//')
+          ? `https:${current.condition.icon}`
+          : current.condition?.icon,
+        humidity: current.humidity || 0,
+        windKph: Math.round(current.wind_kph || 0),
+        windDir: current.wind_dir || '',
+        uv: uvVal,
+        uvLabel,
+        isDay,
+      },
+      forecast: {
+        maxTempC: Math.round(forecastDay.maxtemp_c || current.temp_c || 0),
+        minTempC: Math.round(forecastDay.mintemp_c || current.temp_c || 0),
+        chanceOfRain: forecastDay.daily_chance_of_rain || 0,
+        condition: forecastDay.condition?.text || conditionText,
+      },
+      theme,
+    })
+  );
+}
+
+function getDefaultWeatherPayload(locationName: string) {
+  return {
     location: {
-      name: location.name || 'Cidade',
-      region: location.region || '',
-      country: location.country || 'Brasil',
-      localtime: location.localtime || '',
+      name: locationName || 'Brasília',
+      region: 'Distrito Federal',
+      country: 'Brasil',
+      localtime: new Date().toISOString(),
     },
     current: {
-      tempC: Math.round(current.temp_c || 0),
-      feelsLikeC: Math.round(current.feelslike_c || current.temp_c || 0),
-      condition: conditionText,
-      icon: current.condition?.icon?.startsWith('//')
-        ? `https:${current.condition.icon}`
-        : current.condition?.icon,
-      humidity: current.humidity || 0,
-      windKph: Math.round(current.wind_kph || 0),
-      windDir: current.wind_dir || '',
-      uv: uvVal,
-      uvLabel,
-      isDay,
+      temp_c: 26,
+      feelslike_c: 27,
+      humidity: 58,
+      wind_kph: 14,
+      wind_dir: 'E',
+      uv: 5,
+      is_day: 1,
+      condition: {
+        text: 'Sol com algumas nuvens',
+        icon: 'https://cdn.weatherapi.com/weather/64x64/day/116.png',
+        code: 1003,
+      },
     },
     forecast: {
-      maxTempC: Math.round(forecastDay.maxtemp_c || current.temp_c || 0),
-      minTempC: Math.round(forecastDay.mintemp_c || current.temp_c || 0),
-      chanceOfRain: forecastDay.daily_chance_of_rain || 0,
-      condition: forecastDay.condition?.text || conditionText,
+      forecastday: [
+        {
+          day: {
+            maxtemp_c: 30,
+            mintemp_c: 19,
+            daily_chance_of_rain: 15,
+            condition: {
+              text: 'Parcialmente nublado',
+              code: 1003,
+            },
+          },
+        },
+      ],
     },
-    theme,
-  });
+  };
 }

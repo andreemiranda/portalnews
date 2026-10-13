@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { sanitizePublicData } from '@/lib/security';
 
 export const dynamic = 'force-dynamic';
 
@@ -7,11 +8,12 @@ export async function GET() {
   const voiceId = process.env.ELEVENLABS_VOICE_ID;
   const isEnabled = Boolean(apiKey && voiceId);
 
-  return NextResponse.json({
-    enabled: isEnabled,
-    provider: isEnabled ? 'elevenlabs' : 'browser',
-    voiceId: voiceId || null,
-  });
+  return NextResponse.json(
+    sanitizePublicData({
+      enabled: isEnabled,
+      provider: isEnabled ? 'elevenlabs' : 'browser',
+    })
+  );
 }
 
 export async function POST(req: NextRequest) {

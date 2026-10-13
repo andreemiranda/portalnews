@@ -334,9 +334,57 @@ export function cleanFullNewsText(input?: string): string {
   if (finalContent.length < 40) {
     const rawFallback = decodeHtmlEntities(input.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim());
     if (rawFallback.length > finalContent.length) {
-      return rawFallback;
+      finalContent = rawFallback;
     }
   }
 
+  // Remove any truncation markers, bracketed ellipses ([…], [...], [&#8230;], &hellip;) and trailing cutoffs
+  finalContent = finalContent
+    .replace(/\[\s*(?:…|\.{3}|&#8230;|&hellip;|\.|\?|!|\*)\s*\]/gi, '')
+    .replace(/\(\s*(?:…|\.{3}|&#8230;|&hellip;)\s*\)/gi, '')
+    .replace(/\[\s*(?:leia\s+mais|continue\s+lendo|saiba\s+mais|veja\s+mais)[^\]]*\]/gi, '')
+    .replace(/(?:…|\.{3}|&#8230;|&hellip;)\s*$/gi, '')
+    .replace(/\[\s*…\s*\]/g, '')
+    .replace(/\[\s*\.\.\.\s*\]/g, '')
+    .replace(/\s*…\s*/g, ' ')
+    .trim();
+
+  // Strip dangling conjunctions and prepositions at cutoff points (e.g., "comercial, ou [...]" -> "comercial.")
+  finalContent = finalContent
+    .replace(/[,;:\-\s]+(?:e|ou|mas|que|de|da|do|com|em|para|por|a|o)\s*$/i, '')
+    .trim();
+
+  // Clean trailing punctuation from incomplete clauses (e.g. "comercial, [...]" -> "comercial.")
+  if (/[,;:\-\s]+$/.test(finalContent)) {
+    finalContent = finalContent.replace(/[,;:\-\s]+$/, '.');
+  } else if (finalContent.length > 0 && !/[.!?]"?$/.test(finalContent)) {
+    finalContent = finalContent + '.';
+  }
+
   return finalContent;
+}
+
+export function removeTruncationMarkers(text?: string): string {
+  if (!text) return '';
+  let cleaned = text
+    .replace(/\[\s*(?:…|\.{3}|&#8230;|&hellip;|\.|\?|!|\*)\s*\]/gi, '')
+    .replace(/\(\s*(?:…|\.{3}|&#8230;|&hellip;)\s*\)/gi, '')
+    .replace(/\[\s*(?:leia\s+mais|continue\s+lendo|saiba\s+mais|veja\s+mais)[^\]]*\]/gi, '')
+    .replace(/(?:…|\.{3}|&#8230;|&hellip;)\s*$/gi, '')
+    .replace(/\[\s*…\s*\]/g, '')
+    .replace(/\[\s*\.\.\.\s*\]/g, '')
+    .replace(/\s*…\s*/g, ' ')
+    .trim();
+
+  // Strip dangling conjunctions at cutoff points
+  cleaned = cleaned
+    .replace(/[,;:\-\s]+(?:e|ou|mas|que|de|da|do|com|em|para|por|a|o)\s*$/i, '')
+    .trim();
+
+  if (/[,;:\-\s]+$/.test(cleaned)) {
+    cleaned = cleaned.replace(/[,;:\-\s]+$/, '.');
+  } else if (cleaned.length > 0 && !/[.!?]"?$/.test(cleaned)) {
+    cleaned = cleaned + '.';
+  }
+  return cleaned;
 }
