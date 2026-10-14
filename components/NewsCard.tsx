@@ -1,9 +1,11 @@
 'use client';
 
 import React from 'react';
+import Link from 'next/link';
 import { NewsItem } from '@/lib/types';
 import { Clock, Bookmark, Volume2 } from 'lucide-react';
 import { OptimizedImage } from './OptimizedImage';
+import { slugify } from '@/lib/slug';
 
 interface NewsCardProps {
   item: NewsItem;
@@ -44,6 +46,8 @@ export const NewsCard: React.FC<NewsCardProps> = ({
     CATEGORY_STYLES[item.categoryId.toLowerCase()] ||
     'bg-slate-100 text-slate-800 dark:bg-zinc-800 dark:text-zinc-300 border-slate-200 dark:border-zinc-700';
 
+  const articleHref = `/noticia/${item.slug || slugify(item.title, item.id)}`;
+
   if (viewMode === 'compact') {
     return (
       <div
@@ -51,14 +55,16 @@ export const NewsCard: React.FC<NewsCardProps> = ({
         className="bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-2xl p-4 sm:p-5 hover:border-red-500 dark:hover:border-red-500 transition-all cursor-pointer flex items-center gap-4 group shadow-sm hover:shadow-md"
       >
         {item.imageUrl && (
-          <div className="w-28 h-24 sm:w-36 sm:h-28 shrink-0 rounded-xl overflow-hidden bg-zinc-950 relative">
-            <OptimizedImage
-              src={item.imageUrl}
-              alt={item.title}
-              sizes="150px"
-              className="group-hover:scale-105 transition-transform duration-500"
-            />
-          </div>
+          <Link href={articleHref} className="shrink-0" onClick={(e) => e.stopPropagation()}>
+            <div className="w-28 h-24 sm:w-36 sm:h-28 shrink-0 rounded-xl overflow-hidden bg-zinc-950 relative">
+              <OptimizedImage
+                src={item.imageUrl}
+                alt={item.title}
+                sizes="150px"
+                className="group-hover:scale-105 transition-transform duration-500"
+              />
+            </div>
+          </Link>
         )}
 
         <div className="flex-1 min-w-0 flex flex-col justify-between h-full">
@@ -74,22 +80,30 @@ export const NewsCard: React.FC<NewsCardProps> = ({
               </span>
             </div>
 
-            <h3
-              className={`font-sans font-bold tracking-tight text-slate-900 dark:text-zinc-100 group-hover:text-red-600 dark:group-hover:text-red-400 transition line-clamp-2 ${fontClasses[fontSize]}`}
-            >
-              {item.title}
-            </h3>
+            <Link href={articleHref} className="block" onClick={(e) => e.stopPropagation()}>
+              <h3
+                className={`font-sans font-bold tracking-tight text-slate-900 dark:text-zinc-100 group-hover:text-red-600 dark:group-hover:text-red-400 transition line-clamp-2 ${fontClasses[fontSize]}`}
+              >
+                {item.title}
+              </h3>
+            </Link>
           </div>
 
           <div className="flex items-center justify-between mt-3 pt-2 border-t border-slate-100 dark:border-zinc-800">
-            <span className="text-[11px] text-red-600 dark:text-red-400 font-bold group-hover:underline">Ler matéria →</span>
+            <Link
+              href={articleHref}
+              onClick={(e) => e.stopPropagation()}
+              className="text-[11px] text-red-600 dark:text-red-400 font-bold group-hover:underline"
+            >
+              Ler matéria →
+            </Link>
             <div className="flex items-center gap-2">
               <button
                 onClick={(e) => {
                   e.stopPropagation();
                   onReadAudio(item);
                 }}
-                className="p-1.5 text-slate-400 hover:text-red-600 dark:hover:text-red-400 rounded-full hover:bg-slate-100 dark:hover:bg-zinc-800 transition"
+                className="p-1.5 text-slate-400 hover:text-red-600 dark:hover:text-red-400 rounded-full hover:bg-slate-100 dark:hover:bg-zinc-800 transition cursor-pointer"
                 title="Ouvir Notícia"
               >
                 <Volume2 className="w-3.5 h-3.5" />
@@ -99,7 +113,7 @@ export const NewsCard: React.FC<NewsCardProps> = ({
                   e.stopPropagation();
                   onToggleBookmark(item);
                 }}
-                className={`p-1.5 rounded-full transition ${
+                className={`p-1.5 rounded-full transition cursor-pointer ${
                   isBookmarked
                     ? 'text-amber-500 bg-amber-50 dark:bg-amber-950/40'
                     : 'text-slate-400 hover:text-amber-500 hover:bg-slate-100 dark:hover:bg-zinc-800'
@@ -121,9 +135,9 @@ export const NewsCard: React.FC<NewsCardProps> = ({
       className="bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-3xl overflow-hidden hover:border-red-500 dark:hover:border-red-500 transition-all cursor-pointer flex flex-col justify-between group shadow-sm hover:shadow-md"
     >
       <div>
-        {/* Bento Card Image (Only if original image exists) */}
+        {/* Card Image */}
         {item.imageUrl ? (
-          <div className="relative h-48 sm:h-52 bg-zinc-950 overflow-hidden">
+          <Link href={articleHref} className="block relative h-48 sm:h-52 bg-zinc-950 overflow-hidden" onClick={(e) => e.stopPropagation()}>
             <OptimizedImage
               src={item.imageUrl}
               alt={item.title}
@@ -141,9 +155,10 @@ export const NewsCard: React.FC<NewsCardProps> = ({
             <button
               onClick={(e) => {
                 e.stopPropagation();
+                e.preventDefault();
                 onToggleBookmark(item);
               }}
-              className={`absolute top-3 right-3 p-2 rounded-full backdrop-blur-md shadow-md z-10 transition ${
+              className={`absolute top-3 right-3 p-2 rounded-full backdrop-blur-md shadow-md z-10 transition cursor-pointer ${
                 isBookmarked
                   ? 'bg-amber-500 text-white'
                   : 'bg-zinc-900/60 text-white hover:bg-zinc-900'
@@ -152,7 +167,7 @@ export const NewsCard: React.FC<NewsCardProps> = ({
             >
               <Bookmark className="w-4 h-4" fill={isBookmarked ? 'currentColor' : 'none'} />
             </button>
-          </div>
+          </Link>
         ) : (
           <div className="p-5 pb-0 flex items-center justify-between">
             <span
@@ -165,7 +180,7 @@ export const NewsCard: React.FC<NewsCardProps> = ({
                 e.stopPropagation();
                 onToggleBookmark(item);
               }}
-              className={`p-2 rounded-full border transition ${
+              className={`p-2 rounded-full border transition cursor-pointer ${
                 isBookmarked
                   ? 'bg-amber-500 text-white border-amber-600'
                   : 'bg-zinc-100 dark:bg-zinc-800 text-slate-500 hover:text-amber-500 border-zinc-200 dark:border-zinc-700'
@@ -185,11 +200,13 @@ export const NewsCard: React.FC<NewsCardProps> = ({
             </span>
           </div>
 
-          <h3
-            className={`font-sans font-bold tracking-tight text-slate-900 dark:text-zinc-100 group-hover:text-red-600 dark:group-hover:text-red-400 transition leading-snug mb-3 line-clamp-3 ${fontClasses[fontSize]}`}
-          >
-            {item.title}
-          </h3>
+          <Link href={articleHref} className="block" onClick={(e) => e.stopPropagation()}>
+            <h3
+              className={`font-sans font-bold tracking-tight text-slate-900 dark:text-zinc-100 group-hover:text-red-600 dark:group-hover:text-red-400 transition leading-snug mb-3 line-clamp-3 ${fontClasses[fontSize]}`}
+            >
+              {item.title}
+            </h3>
+          </Link>
 
           <p className="text-slate-600 dark:text-zinc-400 text-xs sm:text-sm leading-relaxed line-clamp-3">
             {item.summary}
@@ -199,16 +216,20 @@ export const NewsCard: React.FC<NewsCardProps> = ({
 
       {/* Card Footer Actions */}
       <div className="px-5 sm:px-6 py-4 bg-slate-50/70 dark:bg-zinc-800/40 border-t border-slate-100 dark:border-zinc-800/80 flex items-center justify-between">
-        <span className="text-xs font-bold text-red-600 group-hover:underline">
+        <Link
+          href={articleHref}
+          onClick={(e) => e.stopPropagation()}
+          className="text-xs font-bold text-red-600 group-hover:underline"
+        >
           Ler matéria completa →
-        </span>
+        </Link>
 
         <button
           onClick={(e) => {
             e.stopPropagation();
             onReadAudio(item);
           }}
-          className="p-2 rounded-full text-slate-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-slate-200 dark:hover:bg-zinc-700 transition"
+          className="p-2 rounded-full text-slate-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-slate-200 dark:hover:bg-zinc-700 transition cursor-pointer"
           title="Ouvir Notícia em Áudio"
         >
           <Volume2 className="w-4 h-4" />

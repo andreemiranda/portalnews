@@ -44,7 +44,7 @@ ${items
   .map((item) => {
     const pubDate = item.isoDate || item.pubDate || now;
     const articleSlug = item.slug || slugify(item.title, item.id);
-    const postUrl = `${domain}/?article=${encodeURIComponent(articleSlug)}`;
+    const postUrl = `${domain}/noticia/${encodeURIComponent(articleSlug)}`;
     let safeIsoDate: string;
     try {
       safeIsoDate = new Date(pubDate).toISOString();

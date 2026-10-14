@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
+import { useRouter } from 'next/navigation';
 import { NewsItem, FeedSource } from '@/lib/types';
 import { DEFAULT_FEEDS } from '@/lib/feeds';
 import { Header } from '@/components/Header';
@@ -8,7 +9,6 @@ import { BreakingTicker } from '@/components/BreakingTicker';
 import { CategoryTabs } from '@/components/CategoryTabs';
 import { FeaturedNews } from '@/components/FeaturedNews';
 import { NewsCard } from '@/components/NewsCard';
-import { ReaderModal } from '@/components/ReaderModal';
 import { FeedManagerModal } from '@/components/FeedManagerModal';
 import { Footer } from '@/components/Footer';
 import { AdSenseBanner } from '@/components/AdSenseBanner';
@@ -29,6 +29,8 @@ import {
 } from 'lucide-react';
 
 export default function HomePage() {
+  const router = useRouter();
+
   const [news, setNews] = useState<NewsItem[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
@@ -45,9 +47,6 @@ export default function HomePage() {
   // Bookmarks state
   const [bookmarkedIds, setBookmarkedIds] = useState<string[]>([]);
 
-  // Reader Modal State
-  const [selectedNews, setSelectedNews] = useState<NewsItem | null>(null);
-
   // Feed Manager State (Read-only verified sources viewer)
   const [isFeedManagerOpen, setIsFeedManagerOpen] = useState<boolean>(false);
   const [customFeeds] = useState<FeedSource[]>(DEFAULT_FEEDS);
@@ -59,7 +58,7 @@ export default function HomePage() {
 
   // Load bookmarks on mount
   useEffect(() => {
-    Promise.resolve().then(() => {
+    const timer = setTimeout(() => {
       try {
         const saved = localStorage.getItem('portal_news_bookmarks');
         if (saved) {
@@ -68,7 +67,8 @@ export default function HomePage() {
       } catch {
         // ignore storage errors
       }
-    });
+    }, 0);
+    return () => clearTimeout(timer);
   }, []);
 
   // Back to top scroll listener
@@ -88,49 +88,24 @@ export default function HomePage() {
     }
   };
 
-  // Synchronize ?article= URL query parameter with selectedNews modal using clean slug
+  // Direct navigation to individual news page (replaces pop-up modal)
+  const handleOpenNews = useCallback(
+    (item: NewsItem) => {
+      const targetSlug = item.slug || slugify(item.title, item.id);
+      router.push(`/noticia/${encodeURIComponent(targetSlug)}`);
+    },
+    [router]
+  );
+
+  // If accessed with ?article= query parameter, redirect to the new dedicated news page
   useEffect(() => {
     if (typeof window === 'undefined') return;
-
-    if (selectedNews) {
-      const url = new URL(window.location.href);
-      const articleSlug = selectedNews.slug || slugify(selectedNews.title, selectedNews.id);
-      url.searchParams.set('article', articleSlug);
-      window.history.replaceState({}, '', url.toString());
-    } else {
-      const url = new URL(window.location.href);
-      if (url.searchParams.has('article')) {
-        url.searchParams.delete('article');
-        window.history.replaceState({}, '', url.toString());
-      }
+    const params = new URLSearchParams(window.location.search);
+    const targetParam = params.get('article');
+    if (targetParam) {
+      router.replace(`/noticia/${encodeURIComponent(targetParam)}`);
     }
-  }, [selectedNews]);
-
-  // Check URL on initial news load to open deep-linked article (matches slug, id, or legacy params)
-  useEffect(() => {
-    if (typeof window === 'undefined' || news.length === 0 || selectedNews) return;
-
-    const timer = setTimeout(() => {
-      const params = new URLSearchParams(window.location.search);
-      const targetParam = params.get('article');
-      if (targetParam && !selectedNews) {
-        const decodedTarget = decodeURIComponent(targetParam).toLowerCase().trim();
-        const found = news.find(
-          (item) =>
-            (item.slug && item.slug.toLowerCase() === decodedTarget) ||
-            (item.title && slugify(item.title) === decodedTarget) ||
-            item.id.toLowerCase() === decodedTarget ||
-            item.id === targetParam ||
-            (item.link && item.link === targetParam)
-        );
-        if (found) {
-          setSelectedNews(found);
-        }
-      }
-    }, 0);
-
-    return () => clearTimeout(timer);
-  }, [news, selectedNews]);
+  }, [router]);
 
   // Save bookmarks to localStorage
   const handleToggleBookmark = useCallback((item: NewsItem) => {
@@ -279,7 +254,7 @@ export default function HomePage() {
       />
 
       {/* Breaking News Ticker (G1 Live Ticker Style) */}
-      <BreakingTicker news={news} onSelectNews={setSelectedNews} />
+      <BreakingTicker news={news} onSelectNews={handleOpenNews} />
 
       {/* Categories Horizontal Navigation Tabs */}
       <CategoryTabs
@@ -450,10 +425,10 @@ export default function HomePage() {
               <FeaturedNews
                 item={featuredItem}
                 secondaryItems={remainingNews.slice(0, 2)}
-                onSelectNews={setSelectedNews}
+                onSelectNews={handleOpenNews}
                 onToggleBookmark={handleToggleBookmark}
                 isBookmarked={bookmarkedIds.includes(featuredItem.id)}
-                onReadAudio={setSelectedNews}
+                onReadAudio={handleOpenNews}
                 fontSize={fontSize}
               />
             )}
@@ -481,10 +456,10 @@ export default function HomePage() {
                       <NewsCard
                         key={item.id}
                         item={item}
-                        onSelectNews={setSelectedNews}
+                        onSelectNews={handleOpenNews}
                         onToggleBookmark={handleToggleBookmark}
                         isBookmarked={bookmarkedIds.includes(item.id)}
-                        onReadAudio={setSelectedNews}
+                        onReadAudio={handleOpenNews}
                         viewMode="grid"
                         fontSize={fontSize}
                       />
@@ -504,10 +479,10 @@ export default function HomePage() {
                           <NewsCard
                             key={item.id}
                             item={item}
-                            onSelectNews={setSelectedNews}
+                            onSelectNews={handleOpenNews}
                             onToggleBookmark={handleToggleBookmark}
                             isBookmarked={bookmarkedIds.includes(item.id)}
-                            onReadAudio={setSelectedNews}
+                            onReadAudio={handleOpenNews}
                             viewMode="compact"
                             fontSize={fontSize}
                           />
@@ -535,7 +510,7 @@ export default function HomePage() {
                       {remainingNews.slice(0, 5).map((popItem, rankIdx) => (
                         <div
                           key={popItem.id}
-                          onClick={() => setSelectedNews(popItem)}
+                          onClick={() => handleOpenNews(popItem)}
                           className="py-3.5 first:pt-0 last:pb-0 flex items-start gap-3.5 cursor-pointer group"
                         >
                           <span className="w-7 h-7 rounded-full bg-red-600 text-white font-black text-xs flex items-center justify-center shrink-0 shadow-sm group-hover:scale-110 transition-transform">
@@ -591,10 +566,10 @@ export default function HomePage() {
                   <NewsCard
                     key={item.id}
                     item={item}
-                    onSelectNews={setSelectedNews}
+                    onSelectNews={handleOpenNews}
                     onToggleBookmark={handleToggleBookmark}
                     isBookmarked={bookmarkedIds.includes(item.id)}
-                    onReadAudio={setSelectedNews}
+                    onReadAudio={handleOpenNews}
                     viewMode={viewMode}
                     fontSize={fontSize}
                   />
@@ -616,15 +591,6 @@ export default function HomePage() {
           <ArrowUp className="w-5 h-5" />
         </button>
       )}
-
-      {/* Full Article Reader Modal with Audio Reader & Summarizer */}
-      <ReaderModal
-        item={selectedNews}
-        onClose={() => setSelectedNews(null)}
-        onToggleBookmark={handleToggleBookmark}
-        isBookmarked={selectedNews ? bookmarkedIds.includes(selectedNews.id) : false}
-        fontSize={fontSize}
-      />
 
       {/* Official Verified Editorial Channels Modal */}
       <FeedManagerModal

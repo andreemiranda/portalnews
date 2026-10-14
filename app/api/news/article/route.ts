@@ -1,38 +1,51 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { fetchFullArticleBody, ensureCompleteArticleText } from '@/lib/article-extractor';
+import { getNewsItemBySlugOrId } from '@/lib/news-fetcher';
 import { sanitizePublicData } from '@/lib/security';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
-  const url = searchParams.get('url') || searchParams.get('link') || '';
-  const title = searchParams.get('title') || 'Notícia';
-  const category = searchParams.get('category') || 'Geral';
-  const rawText = searchParams.get('text') || '';
+  const slugParam = searchParams.get('slug') || searchParams.get('id');
+  const urlParam = searchParams.get('url') || searchParams.get('link') || '';
+  const titleParam = searchParams.get('title') || 'Notícia';
+  const categoryParam = searchParams.get('category') || 'Geral';
+  const rawTextParam = searchParams.get('text') || '';
 
   try {
-    let fullText: string | null = null;
+    let item = null;
+    if (slugParam) {
+      item = await getNewsItemBySlugOrId(slugParam);
+    }
 
-    if (url && url.startsWith('http')) {
-      fullText = await fetchFullArticleBody(url, 4500);
+    const targetUrl = urlParam || item?.link || '';
+    const targetTitle = item?.title || titleParam;
+    const targetCategory = item?.category || categoryParam;
+    const targetRawText = item?.contentHtml || item?.summary || rawTextParam;
+
+    let fullText: string | null = null;
+    if (targetUrl && targetUrl.startsWith('http')) {
+      fullText = await fetchFullArticleBody(targetUrl, 4500);
     }
 
     if (!fullText || fullText.length < 300) {
-      fullText = ensureCompleteArticleText(rawText || title, title, category);
+      fullText = ensureCompleteArticleText(targetRawText || targetTitle, targetTitle, targetCategory);
     }
 
     const payload = {
       success: true,
+      item: item ? { ...item, contentHtml: fullText } : null,
       contentHtml: fullText,
     };
 
     return NextResponse.json(sanitizePublicData(payload));
-  } catch (error: any) {
-    const fallbackText = ensureCompleteArticleText(rawText || title, title, category);
+  } catch {
+    const fallbackText = ensureCompleteArticleText(rawTextParam || titleParam, titleParam, categoryParam);
     return NextResponse.json(
       sanitizePublicData({
         success: true,
+        item: null,
         contentHtml: fallbackText,
       })
     );

@@ -447,3 +447,58 @@ export async function getLiveNews(options: {
 
   return finalItems;
 }
+
+/**
+ * Busca uma notícia específica pelo seu slug ou id
+ */
+export async function getNewsItemBySlugOrId(slugOrId: string): Promise<NewsItem | null> {
+  if (!slugOrId) return null;
+  const target = decodeURIComponent(slugOrId).toLowerCase().trim();
+
+  // 1. Busca exata no cache ou carrega todas as notícias
+  const allItems = await getLiveNews({ category: 'all' });
+  const found = allItems.find(
+    (item) =>
+      item.slug.toLowerCase() === target ||
+      slugify(item.title).toLowerCase() === target ||
+      item.id.toLowerCase() === target ||
+      item.id === slugOrId
+  );
+  if (found) return found;
+
+  // 2. Busca aproximada por inclusão de slug no conjunto geral
+  const partial = allItems.find(
+    (item) =>
+      (item.slug && (item.slug.toLowerCase().includes(target) || target.includes(item.slug.toLowerCase()))) ||
+      slugify(item.title).toLowerCase().includes(target) ||
+      target.includes(slugify(item.title).toLowerCase())
+  );
+  if (partial) return partial;
+
+  // 3. Fallback nas categorias específicas
+  const categories = [
+    'Notícias Gerais',
+    'Economia',
+    'Justiça',
+    'Educação',
+    'Pará',
+    'Tocantins',
+    'Mundo',
+    'Tecnologia e Games',
+    'Esporte',
+    'Política',
+  ];
+  for (const cat of categories) {
+    const catItems = await getLiveNews({ category: cat });
+    const match = catItems.find(
+      (item) =>
+        item.slug.toLowerCase() === target ||
+        slugify(item.title).toLowerCase() === target ||
+        item.id.toLowerCase() === target ||
+        (item.slug && (item.slug.toLowerCase().includes(target) || target.includes(item.slug.toLowerCase())))
+    );
+    if (match) return match;
+  }
+
+  return null;
+}
