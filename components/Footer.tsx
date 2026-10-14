@@ -2,7 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { Newspaper, ShieldCheck, Heart, Volume2, Globe, FileCode, ExternalLink } from 'lucide-react';
+import { Newspaper, ShieldCheck, Heart, Volume2, Globe, FileCode, ExternalLink, ArrowUp } from 'lucide-react';
 import { AdSenseBanner } from './AdSenseBanner';
 import { SITE_CONFIG } from '@/lib/site-config';
 
@@ -11,27 +11,46 @@ interface FooterProps {
 }
 
 export const Footer: React.FC<FooterProps> = ({ setActiveCategory }) => {
+  const scrollToTop = () => {
+    if (typeof window !== 'undefined') {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
+
   return (
     <footer className="bg-zinc-950 text-zinc-400 border-t border-zinc-800 mt-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-12">
         {/* Localized Footer AdSense Slot */}
         <AdSenseBanner slot={SITE_CONFIG.adsense.slots.footer} format="horizontal" />
 
+        {/* Top Header of Footer with "Subir ao topo" Button */}
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pb-8 mb-8 border-b border-zinc-900">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 bg-red-600 rounded-xl flex items-center justify-center text-white font-extrabold text-lg shadow-sm">
+              P
+            </div>
+            <div>
+              <h3 className="text-base font-black text-white font-sans tracking-tight">
+                PORTAL <span className="text-red-500">NEWS</span>
+              </h3>
+              <p className="text-[11px] text-zinc-500">Jornalismo e Cobertura Nacional Completa</p>
+            </div>
+          </div>
+
+          <button
+            id="back-to-top-button"
+            onClick={scrollToTop}
+            className="group flex items-center gap-2 px-5 py-2.5 rounded-full bg-zinc-900 hover:bg-red-600 text-zinc-300 hover:text-white border border-zinc-800 hover:border-red-500 transition-all shadow-sm text-xs font-bold cursor-pointer"
+            title="Voltar ao início da página"
+          >
+            <span>Subir ao topo</span>
+            <ArrowUp className="w-4 h-4 group-hover:-translate-y-0.5 transition-transform text-red-500 group-hover:text-white" />
+          </button>
+        </div>
+
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-8">
           {/* Brand Info */}
           <div className="lg:col-span-4 space-y-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-red-600 rounded-xl flex items-center justify-center text-white font-extrabold text-xl shadow-sm">
-                P
-              </div>
-              <div>
-                <h3 className="text-lg font-black text-white font-serif tracking-tight">
-                  PORTAL <span className="text-red-500">NEWS</span>
-                </h3>
-                <p className="text-xs text-zinc-500">Jornalismo e Cobertura Nacional Completa</p>
-              </div>
-            </div>
-
             <p className="text-xs leading-relaxed text-zinc-400 max-w-sm">
               Informação ágil, verificação contínua e cobertura jornalística abrangente sobre economia,
               justiça, educação, política, esportes, tecnologia e os estados brasileiros.
@@ -165,6 +184,14 @@ export const Footer: React.FC<FooterProps> = ({ setActiveCategory }) => {
             <a href="/sitemap.xml" target="_blank" rel="noopener noreferrer" className="hover:text-zinc-300 transition">
               Sitemaps XML
             </a>
+            <span>•</span>
+            <button
+              onClick={scrollToTop}
+              className="hover:text-red-400 transition font-medium flex items-center gap-1 cursor-pointer"
+            >
+              <span>Voltar ao topo</span>
+              <ArrowUp className="w-3 h-3" />
+            </button>
           </div>
           <p className="flex items-center gap-1">
             <span>Desenvolvido com excelência jornalística e tecnologia</span>

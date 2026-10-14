@@ -98,7 +98,7 @@ export const FeaturedNews: React.FC<FeaturedNewsProps> = ({
           <div>
             <h2
               onClick={() => onSelectNews(item)}
-              className={`font-serif font-black tracking-tight text-slate-900 dark:text-zinc-100 hover:text-red-600 dark:hover:text-red-400 cursor-pointer transition leading-tight ${fontClasses[fontSize]}`}
+              className={`font-sans font-black tracking-tight text-slate-900 dark:text-zinc-100 hover:text-red-600 dark:hover:text-red-400 cursor-pointer transition leading-tight ${fontClasses[fontSize]}`}
             >
               {item.title}
             </h2>

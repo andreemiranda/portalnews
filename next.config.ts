@@ -29,6 +29,25 @@ const nextConfig: NextConfig = {
       }
     : {}),
   transpilePackages: ['motion'],
+  headers: async () => [
+    {
+      source: '/(.*)',
+      headers: [
+        { key: 'X-Content-Type-Options', value: 'nosniff' },
+        { key: 'X-Frame-Options', value: 'SAMEORIGIN' },
+        { key: 'Referrer-Policy', value: 'no-referrer-when-downgrade' },
+      ],
+    },
+    {
+      source: '/(sitemap.*\\.xml|robots\\.txt|ads\\.txt)',
+      headers: [
+        {
+          key: 'Cache-Control',
+          value: 'public, max-age=3600, s-maxage=3600, stale-while-revalidate=86400',
+        },
+      ],
+    },
+  ],
   webpack: (config, { dev }) => {
     if (dev && process.env.DISABLE_HMR === 'true') {
       config.watchOptions = {

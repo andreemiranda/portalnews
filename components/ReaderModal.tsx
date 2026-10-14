@@ -342,7 +342,7 @@ export const ReaderModal: React.FC<ReaderModalProps> = ({
         <div className="p-5 sm:p-8 overflow-y-auto space-y-6">
           {/* Article Header */}
           <div className="space-y-3">
-            <h1 className="text-xl sm:text-2xl md:text-3xl font-serif font-black text-zinc-950 dark:text-zinc-50 leading-tight">
+            <h1 className="text-xl sm:text-2xl md:text-3xl font-sans font-black text-zinc-950 dark:text-zinc-50 leading-tight">
               {item.title}
             </h1>
 

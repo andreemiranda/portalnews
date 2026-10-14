@@ -75,7 +75,7 @@ export const NewsCard: React.FC<NewsCardProps> = ({
             </div>
 
             <h3
-              className={`font-serif tracking-tight text-slate-900 dark:text-zinc-100 group-hover:text-red-600 dark:group-hover:text-red-400 transition line-clamp-2 ${fontClasses[fontSize]}`}
+              className={`font-sans font-bold tracking-tight text-slate-900 dark:text-zinc-100 group-hover:text-red-600 dark:group-hover:text-red-400 transition line-clamp-2 ${fontClasses[fontSize]}`}
             >
               {item.title}
             </h3>
@@ -186,7 +186,7 @@ export const NewsCard: React.FC<NewsCardProps> = ({
           </div>
 
           <h3
-            className={`font-serif tracking-tight text-slate-900 dark:text-zinc-100 group-hover:text-red-600 dark:group-hover:text-red-400 transition leading-snug mb-3 line-clamp-3 ${fontClasses[fontSize]}`}
+            className={`font-sans font-bold tracking-tight text-slate-900 dark:text-zinc-100 group-hover:text-red-600 dark:group-hover:text-red-400 transition leading-snug mb-3 line-clamp-3 ${fontClasses[fontSize]}`}
           >
             {item.title}
           </h3>

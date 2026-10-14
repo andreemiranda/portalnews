@@ -22,6 +22,10 @@ import {
   AlertCircle,
   Newspaper,
   Radio,
+  ArrowUp,
+  TrendingUp,
+  Sparkles,
+  Clock,
 } from 'lucide-react';
 
 export default function HomePage() {
@@ -48,6 +52,9 @@ export default function HomePage() {
   const [isFeedManagerOpen, setIsFeedManagerOpen] = useState<boolean>(false);
   const [customFeeds] = useState<FeedSource[]>(DEFAULT_FEEDS);
 
+  // Back to top floating button state
+  const [showScrollTop, setShowScrollTop] = useState(false);
+
   const lastFetchTimestamp = useRef<number>(0);
 
   // Load bookmarks on mount
@@ -63,6 +70,23 @@ export default function HomePage() {
       }
     });
   }, []);
+
+  // Back to top scroll listener
+  useEffect(() => {
+    const handleScroll = () => {
+      if (typeof window !== 'undefined') {
+        setShowScrollTop(window.scrollY > 400);
+      }
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  const scrollToTop = () => {
+    if (typeof window !== 'undefined') {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
 
   // Synchronize ?article= URL query parameter with selectedNews modal using clean slug
   useEffect(() => {
@@ -86,86 +110,92 @@ export default function HomePage() {
   useEffect(() => {
     if (typeof window === 'undefined' || news.length === 0 || selectedNews) return;
 
-    const params = new URLSearchParams(window.location.search);
-    const targetParam = params.get('article');
-    if (targetParam) {
-      const decodedTarget = decodeURIComponent(targetParam).toLowerCase().trim();
-      const found = news.find(
-        (item) =>
-          (item.slug && item.slug.toLowerCase() === decodedTarget) ||
-          (item.title && slugify(item.title) === decodedTarget) ||
-          item.id.toLowerCase() === decodedTarget ||
-          item.id === targetParam ||
-          (item.link && item.link === targetParam)
-      );
-      if (found) {
-        setTimeout(() => setSelectedNews(found), 0);
+    const timer = setTimeout(() => {
+      const params = new URLSearchParams(window.location.search);
+      const targetParam = params.get('article');
+      if (targetParam && !selectedNews) {
+        const decodedTarget = decodeURIComponent(targetParam).toLowerCase().trim();
+        const found = news.find(
+          (item) =>
+            (item.slug && item.slug.toLowerCase() === decodedTarget) ||
+            (item.title && slugify(item.title) === decodedTarget) ||
+            item.id.toLowerCase() === decodedTarget ||
+            item.id === targetParam ||
+            (item.link && item.link === targetParam)
+        );
+        if (found) {
+          setSelectedNews(found);
+        }
       }
-    }
+    }, 0);
+
+    return () => clearTimeout(timer);
   }, [news, selectedNews]);
 
-  // Save Bookmarks to LocalStorage
-  const handleToggleBookmark = (item: NewsItem) => {
+  // Save bookmarks to localStorage
+  const handleToggleBookmark = useCallback((item: NewsItem) => {
     setBookmarkedIds((prev) => {
-      const exists = prev.includes(item.id);
-      const updated = exists ? prev.filter((id) => id !== item.id) : [...prev, item.id];
+      let updated: string[];
+      if (prev.includes(item.id)) {
+        updated = prev.filter((id) => id !== item.id);
+      } else {
+        updated = [...prev, item.id];
+      }
       try {
         localStorage.setItem('portal_news_bookmarks', JSON.stringify(updated));
-      } catch (e) {
-        console.warn('Could not save bookmark to localStorage', e);
+      } catch {
+        // ignore
       }
       return updated;
     });
-  };
+  }, []);
 
-  // Main News Fetcher function
+  // Fetch live news from internal API
   const fetchNews = useCallback(
-    async (category = activeCategory, force = false, silent = false) => {
-      if (!silent) {
-        if (force) setIsRefreshing(true);
-        else setIsLoading(true);
+    async (category: string = 'all', isUserExplicit: boolean = false, isBackgroundPoll: boolean = false) => {
+      if (isUserExplicit) {
+        setIsRefreshing(true);
+      } else if (!isBackgroundPoll) {
+        setIsLoading(true);
       }
       setError(null);
 
       try {
-        const catParam = category === 'favoritos' ? 'all' : category;
-        const cacheBuster = `_t=${Date.now()}`;
-        const refreshParam = force ? '&refresh=true' : '';
-        const url = `/api/news?category=${encodeURIComponent(catParam)}${refreshParam}&${cacheBuster}`;
-
-        const res = await fetch(url, {
-          cache: 'no-store',
-          headers: {
-            'Cache-Control': 'no-cache',
-            Pragma: 'no-cache',
-          },
-        });
-
-        if (!res.ok) throw new Error('Erro ao carregar feeds de notícias.');
-
-        const data = await res.json();
-        const incomingItems: NewsItem[] = data.items || [];
-
-        // O feed visível só é substituído em ações deliberadas (carregamento, troca de editoria ou clique em atualizar),
-        // mantendo a leitura 100% estável sem trocar de repente.
-        if (!silent) {
-          setNews(incomingItems);
+        const queryParams = new URLSearchParams();
+        if (category && category !== 'all' && category !== 'favoritos') {
+          queryParams.set('category', category);
+        }
+        if (isUserExplicit) {
+          queryParams.set('refresh', 'true');
         }
 
-        lastFetchTimestamp.current = Date.now();
-
-        const now = new Date();
-        const formattedTime = now.toLocaleTimeString('pt-BR', {
-          hour: '2-digit',
-          minute: '2-digit',
-          second: '2-digit',
+        const url = `/api/news?${queryParams.toString()}`;
+        const res = await fetch(url, {
+          cache: 'no-store',
+          headers: { Pragma: 'no-cache' },
         });
-        setLastUpdatedTime(formattedTime);
+
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+
+        if (Array.isArray(data.items)) {
+          setNews(data.items);
+          lastFetchTimestamp.current = Date.now();
+
+          const now = new Date();
+          const timeFormatted = now.toLocaleTimeString('pt-BR', {
+            hour: '2-digit',
+            minute: '2-digit',
+          });
+          setLastUpdatedTime(timeFormatted);
+        } else {
+          throw new Error('Formato inválido de resposta.');
+        }
       } catch (err: any) {
-        console.error('Failed to fetch news:', err);
-        if (!silent) {
+        console.error('Falha ao carregar notícias:', err);
+        if (!isBackgroundPoll) {
           setError(
-            'Não foi possível conectar ao servidor de notícias. Tente novamente em instantes.'
+            'Não foi possível atualizar as notícias no momento. Verifique sua conexão e tente novamente.'
           );
         }
       } finally {
@@ -173,108 +203,32 @@ export default function HomePage() {
         setIsRefreshing(false);
       }
     },
-    [activeCategory]
+    []
   );
 
-  // Immediate fetch on initial mount and when active category changes (via click)
+  // Initial load
   useEffect(() => {
-    let isMounted = true;
-
-    const catParam = activeCategory === 'favoritos' ? 'all' : activeCategory;
-    const cacheBuster = `_t=${Date.now()}`;
-    const url = `/api/news?category=${encodeURIComponent(catParam)}&${cacheBuster}`;
-
-    fetch(url, {
-      cache: 'no-store',
-      headers: {
-        'Cache-Control': 'no-cache',
-        Pragma: 'no-cache',
-      },
-    })
-      .then((res) => {
-        if (!res.ok) throw new Error('Erro ao carregar feeds de notícias.');
-        return res.json();
-      })
-      .then((data) => {
-        if (isMounted) {
-          setNews(data.items || []);
-          lastFetchTimestamp.current = Date.now();
-          const now = new Date();
-          const formattedTime = now.toLocaleTimeString('pt-BR', {
-            hour: '2-digit',
-            minute: '2-digit',
-            second: '2-digit',
-          });
-          setLastUpdatedTime(formattedTime);
-          setIsLoading(false);
-        }
-      })
-      .catch((err) => {
-        if (isMounted) {
-          console.error('Failed to fetch news:', err);
-          setError(
-            'Não foi possível conectar ao servidor de notícias. Tente novamente em instantes.'
-          );
-          setIsLoading(false);
-        }
-      });
-
-    return () => {
-      isMounted = false;
-    };
-  }, [activeCategory]);
-
-  // Real-time automatic polling in background (every 50 seconds)
-  useEffect(() => {
-    const interval = setInterval(() => {
-      fetchNews(activeCategory, true, true);
-    }, 50000);
-
-    return () => clearInterval(interval);
+    const timer = setTimeout(() => {
+      fetchNews(activeCategory, false, false);
+    }, 0);
+    return () => clearTimeout(timer);
   }, [activeCategory, fetchNews]);
 
-  // Auto-refresh when tab gains focus or visibility returns
-  useEffect(() => {
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === 'visible') {
-        const timeSinceLastFetch = Date.now() - lastFetchTimestamp.current;
-        if (timeSinceLastFetch > 30000) {
-          fetchNews(activeCategory, true, true);
-        }
-      }
-    };
-
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-    window.addEventListener('focus', handleVisibilityChange);
-
-    return () => {
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
-      window.removeEventListener('focus', handleVisibilityChange);
-    };
-  }, [activeCategory, fetchNews]);
-
-  // Dark Mode class toggle on body
-  useEffect(() => {
-    if (isDarkMode) {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
-  }, [isDarkMode]);
-
-  // Filtered News items
+  // Filter news by search query, bookmarks, and category
   const filteredNews = useMemo(() => {
-    let list = [...news];
+    let result = news;
 
-    // Filter by bookmarks tab
     if (activeCategory === 'favoritos') {
-      list = list.filter((item) => bookmarkedIds.includes(item.id));
+      result = result.filter((item) => bookmarkedIds.includes(item.id));
+    } else if (activeCategory !== 'all') {
+      result = result.filter(
+        (item) => item.category.toLowerCase() === activeCategory.toLowerCase()
+      );
     }
 
-    // Search query filter
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase().trim();
-      list = list.filter(
+      result = result.filter(
         (item) =>
           item.title.toLowerCase().includes(q) ||
           item.summary.toLowerCase().includes(q) ||
@@ -283,56 +237,51 @@ export default function HomePage() {
       );
     }
 
-    return list;
+    return result;
   }, [news, activeCategory, searchQuery, bookmarkedIds]);
 
-  // Category counts
-  const categoryCounts = useMemo(() => {
-    const counts: Record<string, number> = {
-      all: news.length,
-      favoritos: bookmarkedIds.length,
-    };
+  // Featured news item (highest impact story)
+  const featuredItem = useMemo(() => {
+    if (filteredNews.length === 0) return null;
+    return filteredNews[0];
+  }, [filteredNews]);
 
+  // Remaining news items
+  const remainingNews = useMemo(() => {
+    if (filteredNews.length <= 1) return [];
+    return filteredNews.slice(1);
+  }, [filteredNews]);
+
+  const categoryCounts = useMemo(() => {
+    const counts: Record<string, number> = {};
     news.forEach((item) => {
       counts[item.category] = (counts[item.category] || 0) + 1;
-      counts[item.categoryId] = (counts[item.categoryId] || 0) + 1;
     });
-
     return counts;
-  }, [news, bookmarkedIds]);
-
-  // Lead / Featured news article
-  const featuredItem = filteredNews.length > 0 ? filteredNews[0] : null;
-  const remainingNews = filteredNews.length > 1 ? filteredNews.slice(1) : [];
+  }, [news]);
 
   return (
-    <div
-      className={`min-h-screen bg-[#f1f3f6] dark:bg-[#121316] text-slate-900 dark:text-zinc-100 transition-colors font-sans ${
-        isDarkMode ? 'dark' : ''
-      }`}
-      suppressHydrationWarning
-    >
-      {/* Header Bar */}
+    <div className={`min-h-screen bg-slate-50 dark:bg-zinc-950 text-slate-900 dark:text-zinc-100 font-sans transition-colors duration-300 ${isDarkMode ? 'dark' : ''}`}>
+      {/* Top Header */}
       <Header
-        searchQuery={searchQuery}
-        setSearchQuery={setSearchQuery}
-        bookmarkCount={bookmarkedIds.length}
         activeCategory={activeCategory}
         setActiveCategory={setActiveCategory}
-        onRefresh={() => fetchNews(activeCategory, true, false)}
-        isLoading={isLoading || isRefreshing}
+        searchQuery={searchQuery}
+        setSearchQuery={setSearchQuery}
         fontSize={fontSize}
         setFontSize={setFontSize}
         isDarkMode={isDarkMode}
         setIsDarkMode={setIsDarkMode}
+        onRefresh={() => fetchNews(activeCategory, true, false)}
+        isLoading={isLoading || isRefreshing}
+        bookmarkCount={bookmarkedIds.length}
         onOpenFeedManager={() => setIsFeedManagerOpen(true)}
-        lastUpdatedTime={lastUpdatedTime}
       />
 
-      {/* Breaking News Marquee */}
+      {/* Breaking News Ticker (G1 Live Ticker Style) */}
       <BreakingTicker news={news} onSelectNews={setSelectedNews} />
 
-      {/* Category Navigation Tabs */}
+      {/* Categories Horizontal Navigation Tabs */}
       <CategoryTabs
         activeCategory={activeCategory}
         setActiveCategory={setActiveCategory}
@@ -353,7 +302,7 @@ export default function HomePage() {
                 Cobertura Verificada • 24 Horas
               </span>
             </div>
-            <h2 className="text-xl sm:text-2xl font-serif font-black text-slate-900 dark:text-zinc-50 leading-tight">
+            <h2 className="text-xl sm:text-2xl font-sans font-black tracking-tight text-slate-900 dark:text-zinc-50 leading-tight">
               Acompanhe as principais informações de economia, justiça, política e acontecimentos do Brasil
             </h2>
             <p className="text-xs sm:text-sm text-slate-500 dark:text-zinc-400 mt-2">
@@ -370,7 +319,7 @@ export default function HomePage() {
         {/* Controls & View Switcher */}
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pb-4 border-b border-slate-200 dark:border-zinc-800">
           <div className="flex items-center gap-3 flex-wrap">
-            <h2 className="text-xl sm:text-2xl font-serif font-black text-slate-900 dark:text-zinc-100 flex items-center gap-2">
+            <h2 className="text-xl sm:text-2xl font-sans font-black tracking-tight text-slate-900 dark:text-zinc-100 flex items-center gap-2">
               {activeCategory === 'all'
                 ? 'Todas as Notícias'
                 : activeCategory === 'favoritos'
@@ -412,12 +361,12 @@ export default function HomePage() {
               <button
                 id="grid-view-button"
                 onClick={() => setViewMode('grid')}
-                className={`p-1.5 px-3 rounded-full text-xs font-bold transition flex items-center gap-1.5 ${
+                className={`p-1.5 px-3 rounded-full text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
                   viewMode === 'grid'
                     ? 'bg-red-600 text-white shadow-sm'
                     : 'text-slate-500 hover:text-slate-900 dark:hover:text-zinc-100'
                 }`}
-                title="Modo Grade Bento"
+                title="Modo Grade Editorial"
               >
                 <LayoutGrid className="w-3.5 h-3.5" />
                 <span className="hidden md:inline">Grade</span>
@@ -425,12 +374,12 @@ export default function HomePage() {
               <button
                 id="compact-view-button"
                 onClick={() => setViewMode('compact')}
-                className={`p-1.5 px-3 rounded-full text-xs font-bold transition flex items-center gap-1.5 ${
+                className={`p-1.5 px-3 rounded-full text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
                   viewMode === 'compact'
                     ? 'bg-red-600 text-white shadow-sm'
                     : 'text-slate-500 hover:text-slate-900 dark:hover:text-zinc-100'
                 }`}
-                title="Modo Compacto"
+                title="Modo Lista Compacta"
               >
                 <List className="w-3.5 h-3.5" />
                 <span className="hidden md:inline">Lista</span>
@@ -487,16 +436,16 @@ export default function HomePage() {
             {activeCategory !== 'all' && (
               <button
                 onClick={() => setActiveCategory('all')}
-                className="mt-6 px-4 py-2 bg-red-600 text-white text-xs font-bold rounded-full hover:bg-red-700 transition shadow"
+                className="mt-6 px-4 py-2 bg-red-600 text-white text-xs font-bold rounded-full hover:bg-red-700 transition shadow cursor-pointer"
               >
                 Ver Todas as Notícias
               </button>
             )}
           </div>
         ) : (
-          /* News Feed Content */
+          /* News Feed Content - G1 Inspired Editorial Organization */
           <>
-            {/* Featured Article Section (Only shown in 'all' view or first load with grid view) */}
+            {/* Grand Lead Editorial Headline Package */}
             {viewMode === 'grid' && featuredItem && !searchQuery && (
               <FeaturedNews
                 item={featuredItem}
@@ -512,16 +461,133 @@ export default function HomePage() {
             {/* Localized In-Feed AdSense Banner */}
             <AdSenseBanner slot={SITE_CONFIG.adsense.slots.sidebar} format="auto" />
 
-            {/* Bento Grid or Compact Feed */}
-            <div
-              className={
-                viewMode === 'grid'
-                  ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6'
-                  : 'space-y-3'
-              }
-            >
-              {(viewMode === 'grid' && !searchQuery ? remainingNews.slice(2) : filteredNews).map(
-                (item) => (
+            {/* Editorial Layout: Main Feed Column (8 cols) + G1 Lateral Rail (4 cols) */}
+            {viewMode === 'grid' && !searchQuery ? (
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+                {/* Main Feed Column - 8 Cols */}
+                <div className="lg:col-span-8 space-y-6">
+                  <div className="flex items-center justify-between pb-3 border-b-2 border-red-600">
+                    <h3 className="text-base sm:text-lg font-black tracking-tight text-slate-900 dark:text-zinc-100 uppercase flex items-center gap-2">
+                      <span className="w-2.5 h-2.5 bg-red-600 rounded-sm inline-block" />
+                      Últimas Notícias
+                    </h3>
+                    <span className="text-xs font-semibold text-slate-400">
+                      Cobertura apurada e contínua
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    {remainingNews.slice(2, 14).map((item) => (
+                      <NewsCard
+                        key={item.id}
+                        item={item}
+                        onSelectNews={setSelectedNews}
+                        onToggleBookmark={handleToggleBookmark}
+                        isBookmarked={bookmarkedIds.includes(item.id)}
+                        onReadAudio={setSelectedNews}
+                        viewMode="grid"
+                        fontSize={fontSize}
+                      />
+                    ))}
+                  </div>
+
+                  {/* Further editorial coverage */}
+                  {remainingNews.length > 14 && (
+                    <div className="pt-6 space-y-4">
+                      <div className="flex items-center gap-2 pb-2 border-b border-slate-200 dark:border-zinc-800">
+                        <span className="text-xs font-black uppercase text-slate-600 dark:text-zinc-400 tracking-wider">
+                          Mais Notícias e Análises
+                        </span>
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                        {remainingNews.slice(14).map((item) => (
+                          <NewsCard
+                            key={item.id}
+                            item={item}
+                            onSelectNews={setSelectedNews}
+                            onToggleBookmark={handleToggleBookmark}
+                            isBookmarked={bookmarkedIds.includes(item.id)}
+                            onReadAudio={setSelectedNews}
+                            viewMode="compact"
+                            fontSize={fontSize}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Lateral Column (G1 Sidebar Style) - 4 Cols */}
+                <aside className="lg:col-span-4 space-y-6 lg:sticky lg:top-24">
+                  {/* Mais Lidas • Ranking Editorial (G1 Style with Brand Red Numerals) */}
+                  <div className="bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-3xl p-6 shadow-sm">
+                    <div className="flex items-center justify-between pb-3 mb-4 border-b border-slate-100 dark:border-zinc-800">
+                      <h3 className="text-sm font-black uppercase tracking-wider text-slate-900 dark:text-zinc-100 flex items-center gap-2">
+                        <TrendingUp className="w-4 h-4 text-red-600" />
+                        <span>Mais Lidas • Em Alta</span>
+                      </h3>
+                      <span className="text-[10px] font-bold text-red-600 bg-red-50 dark:bg-red-950/60 px-2 py-0.5 rounded-full">
+                        Ranking
+                      </span>
+                    </div>
+
+                    <div className="divide-y divide-slate-100 dark:divide-zinc-800">
+                      {remainingNews.slice(0, 5).map((popItem, rankIdx) => (
+                        <div
+                          key={popItem.id}
+                          onClick={() => setSelectedNews(popItem)}
+                          className="py-3.5 first:pt-0 last:pb-0 flex items-start gap-3.5 cursor-pointer group"
+                        >
+                          <span className="w-7 h-7 rounded-full bg-red-600 text-white font-black text-xs flex items-center justify-center shrink-0 shadow-sm group-hover:scale-110 transition-transform">
+                            {rankIdx + 1}
+                          </span>
+                          <div className="flex-1 min-w-0">
+                            <span className="text-[10px] font-extrabold uppercase text-red-600 tracking-wider">
+                              {popItem.category}
+                            </span>
+                            <h4 className="text-xs sm:text-sm font-bold text-slate-800 dark:text-zinc-200 group-hover:text-red-600 dark:group-hover:text-red-400 transition leading-snug line-clamp-2 mt-0.5 font-sans">
+                              {popItem.title}
+                            </h4>
+                            <span className="text-[10px] text-slate-400 mt-1 flex items-center gap-1 font-medium">
+                              <Clock className="w-3 h-3" /> {popItem.timeAgo}
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Sidebar AdSense Banner Unit */}
+                  <AdSenseBanner slot={SITE_CONFIG.adsense.slots.sidebar} format="rectangle" />
+
+                  {/* Plantão Editorial Radar */}
+                  <div className="bg-gradient-to-br from-red-50 to-zinc-50 dark:from-zinc-900 dark:to-zinc-900/80 border border-red-100 dark:border-red-900/30 rounded-3xl p-5 shadow-sm space-y-3">
+                    <div className="flex items-center gap-2 text-xs font-bold text-red-700 dark:text-red-400">
+                      <Sparkles className="w-4 h-4 text-red-600" />
+                      <span>Plantão Portal News</span>
+                    </div>
+                    <p className="text-xs text-slate-600 dark:text-zinc-300 leading-relaxed">
+                      Acompanhe alertas imediatos, análises econômicas e coberturas dos principais tribunais e órgãos oficiais em tempo real.
+                    </p>
+                    <button
+                      onClick={() => setActiveCategory('all')}
+                      className="w-full py-2 bg-white dark:bg-zinc-800 hover:bg-red-600 hover:text-white border border-red-200 dark:border-zinc-700 text-red-600 dark:text-red-400 text-xs font-bold rounded-xl transition shadow-xs text-center cursor-pointer"
+                    >
+                      Ver Todas as Editorias
+                    </button>
+                  </div>
+                </aside>
+              </div>
+            ) : (
+              /* Compact or Filtered Stream */
+              <div
+                className={
+                  viewMode === 'grid'
+                    ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6'
+                    : 'space-y-3'
+                }
+              >
+                {filteredNews.map((item) => (
                   <NewsCard
                     key={item.id}
                     item={item}
@@ -532,12 +598,24 @@ export default function HomePage() {
                     viewMode={viewMode}
                     fontSize={fontSize}
                   />
-                )
-              )}
-            </div>
+                ))}
+              </div>
+            )}
           </>
         )}
       </main>
+
+      {/* Floating Subir ao Topo Button */}
+      {showScrollTop && (
+        <button
+          onClick={scrollToTop}
+          className="fixed bottom-6 right-6 z-40 p-3.5 rounded-full bg-red-600 hover:bg-red-700 text-white shadow-xl transition-all duration-300 hover:scale-110 flex items-center justify-center ring-4 ring-white/30 dark:ring-zinc-900/60 cursor-pointer"
+          title="Subir ao topo"
+          aria-label="Subir ao topo"
+        >
+          <ArrowUp className="w-5 h-5" />
+        </button>
+      )}
 
       {/* Full Article Reader Modal with Audio Reader & Summarizer */}
       <ReaderModal

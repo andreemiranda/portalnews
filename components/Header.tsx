@@ -156,7 +156,7 @@ export const Header: React.FC<HeaderProps> = ({
             </div>
             <div>
               <div className="flex items-center justify-center md:justify-start gap-2">
-                <h1 className="text-2xl sm:text-3xl font-black tracking-tighter text-slate-900 dark:text-zinc-100 font-serif">
+                <h1 className="text-2xl sm:text-3xl font-black tracking-tighter text-slate-900 dark:text-zinc-100 font-sans">
                   PORTAL <span className="text-red-600">NEWS</span>
                 </h1>
               </div>
