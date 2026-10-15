@@ -14,8 +14,8 @@ services:
       - NODE_ENV=production
       - PORT=3000
       - HOSTNAME=0.0.0.0
-      - NEXT_PUBLIC_SITE_URL=https://seudominio.com.br
-      - SITE_DOMAIN=https://seudominio.com.br
+      - NEXT_PUBLIC_SITE_URL=https://portalnews-pi.vercel.app
+      - SITE_DOMAIN=https://portalnews-pi.vercel.app
       - NEXT_PUBLIC_ADSENSE_ID=${NEXT_PUBLIC_ADSENSE_ID:-}
       - NEWS_API_KEY=${NEWS_API_KEY:-}
     healthcheck:
