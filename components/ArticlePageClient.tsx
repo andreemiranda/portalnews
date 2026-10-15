@@ -9,6 +9,7 @@ import { AdSenseBanner } from './AdSenseBanner';
 import { WeatherCard } from './WeatherCard';
 import { Header } from './Header';
 import { BreakingTicker } from './BreakingTicker';
+import { CategoryTabs } from './CategoryTabs';
 import { Footer } from './Footer';
 import { SITE_CONFIG } from '@/lib/site-config';
 import { slugify } from '@/lib/slug';
@@ -33,7 +34,6 @@ import {
   Volume2,
   TrendingUp,
   ListChecks,
-  ExternalLink,
   Calendar,
   User,
   BookOpen,
@@ -383,6 +383,13 @@ export const ArticlePageClient: React.FC<ArticlePageClientProps> = ({
         onSelectNews={(clicked) => router.push(`/noticia/${clicked.slug || slugify(clicked.title, clicked.id)}`)}
       />
 
+      {/* Categories Menu - Fixed and inline without carousel */}
+      <CategoryTabs
+        activeCategory={item.category}
+        setActiveCategory={(cat) => router.push(cat === 'all' ? '/' : `/?category=${encodeURIComponent(cat)}`)}
+        counts={{ [item.category]: 1 }}
+      />
+
       {/* Main Reading Container */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 py-6 md:py-10">
         {/* Navigation Breadcrumb */}
@@ -649,18 +656,6 @@ export const ArticlePageClient: React.FC<ArticlePageClientProps> = ({
                   Facebook
                 </a>
               </div>
-
-              {item.link && item.link.startsWith('http') && (
-                <a
-                  href={item.link}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-xs font-semibold text-slate-500 hover:text-red-600 transition flex items-center gap-1"
-                >
-                  <span>Ver publicação original na fonte</span>
-                  <ExternalLink className="w-3.5 h-3.5" />
-                </a>
-              )}
             </div>
 
             {/* Leia Também / Notícias Relacionadas (G1 Editorial Grid) */}

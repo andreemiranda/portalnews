@@ -12,18 +12,26 @@ import {
   Trophy,
   MapPin,
   Home,
+  Cpu,
+  Globe,
 } from 'lucide-react';
 
-export default function NotFound() {
-  const quickCategories = [
-    { name: 'Todas as Notícias', href: '/', icon: Home },
-    { name: 'Economia', href: '/?category=Economia', icon: TrendingUp },
-    { name: 'Justiça', href: '/?category=Justi%C3%A7a', icon: Scale },
-    { name: 'Educação', href: '/?category=Educa%C3%A7%C3%A3o', icon: GraduationCap },
-    { name: 'Esporte', href: '/?category=Esporte', icon: Trophy },
-    { name: 'Pará', href: '/?category=Par%C3%A1', icon: MapPin },
-  ];
+const NOT_FOUND_CATEGORIES = [
+  { id: 'all', name: 'Todas as Notícias', href: '/', icon: Home },
+  { id: 'Pará', name: 'Pará', href: '/?category=Par%C3%A1', icon: MapPin },
+  { id: 'Notícias Gerais', name: 'Notícias Gerais', href: '/?category=Not%C3%ADcias%20Gerais', icon: Newspaper },
+  { id: 'Economia', name: 'Economia', href: '/?category=Economia', icon: TrendingUp },
+  { id: 'Justiça', name: 'Justiça', href: '/?category=Justi%C3%A7a', icon: Scale },
+  { id: 'Tocantins', name: 'Tocantins', href: '/?category=Tocantins', icon: MapPin },
+  { id: 'Educação', name: 'Educação', href: '/?category=Educa%C3%A7%C3%A3o', icon: GraduationCap },
+  { id: 'Esporte', name: 'Esporte', href: '/?category=Esporte', icon: Trophy },
+  { id: 'Tecnologia e Games', name: 'Tecnologia & Games', href: '/?category=Tecnologia%20e%20Games', icon: Cpu },
+  { id: 'Goiás', name: 'Goiás', href: '/?category=Goi%C3%A1s', icon: MapPin },
+  { id: 'Santa Catarina', name: 'Santa Catarina', href: '/?category=Santa%20Catarina', icon: MapPin },
+  { id: 'Mundo', name: 'Mundo', href: '/?category=Mundo', icon: Globe },
+];
 
+export default function NotFound() {
   return (
     <div className="min-h-screen bg-white dark:bg-zinc-950 text-slate-900 dark:text-zinc-100 font-sans flex flex-col justify-between transition-colors">
       {/* Top Header Bar */}
@@ -60,6 +68,27 @@ export default function NotFound() {
           </Link>
         </div>
       </header>
+
+      {/* Categories Navigation Bar - Fixed, inline, and all buttons visible */}
+      <nav className="bg-zinc-100 dark:bg-zinc-900/95 border-b border-zinc-200 dark:border-zinc-800 py-2.5">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6">
+          <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+            {NOT_FOUND_CATEGORIES.map((cat) => {
+              const Icon = cat.icon;
+              return (
+                <Link
+                  key={cat.id}
+                  href={cat.href}
+                  className="flex items-center gap-1.5 px-3 sm:px-3.5 py-1.5 rounded-full text-xs font-bold transition whitespace-nowrap border bg-white dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 border-slate-200 dark:border-zinc-700 hover:border-red-500 hover:text-red-600 dark:hover:border-red-500 dark:hover:text-red-400 hover:bg-red-50/70"
+                >
+                  <Icon className="w-3.5 h-3.5" />
+                  <span>{cat.name}</span>
+                </Link>
+              );
+            })}
+          </div>
+        </div>
+      </nav>
 
       {/* Main 404 Error Content */}
       <main className="max-w-3xl mx-auto px-4 py-16 sm:py-24 text-center space-y-8 flex-1 flex flex-col justify-center">
@@ -100,28 +129,6 @@ export default function NotFound() {
               Buscar
             </button>
           </form>
-        </div>
-
-        {/* Quick Category Navigation Shortcuts */}
-        <div className="space-y-3 pt-4 border-t border-slate-100 dark:border-zinc-800">
-          <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">
-            Ou navegue pelas principais editorias:
-          </p>
-          <div className="flex flex-wrap items-center justify-center gap-2">
-            {quickCategories.map((cat) => {
-              const Icon = cat.icon;
-              return (
-                <Link
-                  key={cat.name}
-                  href={cat.href}
-                  className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 text-slate-700 dark:text-zinc-300 hover:border-red-500 hover:text-red-600 transition text-xs font-semibold shadow-2xs"
-                >
-                  <Icon className="w-3.5 h-3.5 text-red-600" />
-                  <span>{cat.name}</span>
-                </Link>
-              );
-            })}
-          </div>
         </div>
 
         {/* Primary CTA */}
