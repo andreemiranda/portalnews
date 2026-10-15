@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
-import { SITE_CONFIG } from '@/lib/site-config';
+import { getBaseUrl } from '@/lib/site-config';
 import { getLiveNews } from '@/lib/news-fetcher';
 import { slugify } from '@/lib/slug';
+import { getSeoCacheHeaders } from '@/lib/seo';
 
 export const dynamic = 'force-dynamic';
 
@@ -26,7 +27,7 @@ function escapeXml(unsafe: string): string {
 }
 
 export async function GET() {
-  const domain = SITE_CONFIG.domain.replace(/\/+$/, '');
+  const domain = getBaseUrl();
   const now = new Date().toISOString();
 
   let items: any[] = [];
@@ -36,7 +37,7 @@ export async function GET() {
     console.error('Failed to get news for sitemap-images:', err);
   }
 
-  // Filter items that actually have original source images (no Unsplash)
+  // Filter items with real original images
   const itemsWithImages = items.filter(
     (item) => item.imageUrl && item.imageUrl.startsWith('http')
   );
@@ -53,8 +54,10 @@ ${itemsWithImages
       safeIsoDate = now;
     }
     const articleSlug = item.slug || slugify(item.title, item.id);
+    const articleUrl = `${domain}/noticia/${encodeURIComponent(articleSlug)}`;
+
     return `  <url>
-    <loc>${escapeXml(`${domain}/?article=${encodeURIComponent(articleSlug)}`)}</loc>
+    <loc>${escapeXml(articleUrl)}</loc>
     <lastmod>${escapeXml(safeIsoDate)}</lastmod>
     <image:image>
       <image:loc>${escapeXml(item.imageUrl)}</image:loc>
@@ -69,7 +72,7 @@ ${itemsWithImages
   return new NextResponse(xml, {
     headers: {
       'Content-Type': 'application/xml; charset=utf-8',
-      'Cache-Control': 'public, max-age=1800, s-maxage=1800',
+      ...getSeoCacheHeaders(1800, 3600),
     },
   });
 }

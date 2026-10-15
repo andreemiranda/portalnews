@@ -1,31 +1,34 @@
 'use client';
 
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { NewsItem, FeedSource } from '@/lib/types';
-import { DEFAULT_FEEDS } from '@/lib/feeds';
+import { NewsItem } from '@/lib/types';
 import { Header } from '@/components/Header';
 import { BreakingTicker } from '@/components/BreakingTicker';
 import { CategoryTabs } from '@/components/CategoryTabs';
 import { FeaturedNews } from '@/components/FeaturedNews';
 import { NewsCard } from '@/components/NewsCard';
-import { FeedManagerModal } from '@/components/FeedManagerModal';
 import { Footer } from '@/components/Footer';
 import { AdSenseBanner } from '@/components/AdSenseBanner';
 import { WeatherCard } from '@/components/WeatherCard';
 import { SITE_CONFIG } from '@/lib/site-config';
 import { slugify } from '@/lib/slug';
 import {
+  getInitialTheme,
+  getInitialFontSize,
+  FontSizeOption,
+} from '@/lib/accessibility';
+import {
   LayoutGrid,
   List,
   RotateCw,
   AlertCircle,
   Newspaper,
-  Radio,
   ArrowUp,
   TrendingUp,
-  Sparkles,
   Clock,
+  Compass,
 } from 'lucide-react';
 
 export default function HomePage() {
@@ -41,20 +44,43 @@ export default function HomePage() {
   const [activeCategory, setActiveCategory] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [viewMode, setViewMode] = useState<'grid' | 'compact'>('grid');
-  const [fontSize, setFontSize] = useState<'normal' | 'large' | 'xlarge'>('normal');
+  const [fontSize, setFontSize] = useState<FontSizeOption>('normal');
   const [isDarkMode, setIsDarkMode] = useState<boolean>(false);
 
   // Bookmarks state
   const [bookmarkedIds, setBookmarkedIds] = useState<string[]>([]);
 
-  // Feed Manager State (Read-only verified sources viewer)
-  const [isFeedManagerOpen, setIsFeedManagerOpen] = useState<boolean>(false);
-  const [customFeeds] = useState<FeedSource[]>(DEFAULT_FEEDS);
-
   // Back to top floating button state
   const [showScrollTop, setShowScrollTop] = useState(false);
 
   const lastFetchTimestamp = useRef<number>(0);
+
+  // Synchronize theme and accessibility font size
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsDarkMode(getInitialTheme());
+      setFontSize(getInitialFontSize());
+    }, 0);
+
+    const handleThemeChange = (e: any) => {
+      if (typeof e.detail?.isDark === 'boolean') {
+        setIsDarkMode(e.detail.isDark);
+      }
+    };
+    const handleFontChange = (e: any) => {
+      if (e.detail?.size) {
+        setFontSize(e.detail.size);
+      }
+    };
+
+    window.addEventListener('portal_theme_change', handleThemeChange);
+    window.addEventListener('portal_fontsize_change', handleFontChange);
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener('portal_theme_change', handleThemeChange);
+      window.removeEventListener('portal_fontsize_change', handleFontChange);
+    };
+  }, []);
 
   // Load bookmarks on mount
   useEffect(() => {
@@ -236,7 +262,7 @@ export default function HomePage() {
   }, [news]);
 
   return (
-    <div className={`min-h-screen bg-slate-50 dark:bg-zinc-950 text-slate-900 dark:text-zinc-100 font-sans transition-colors duration-300 ${isDarkMode ? 'dark' : ''}`}>
+    <div className={`min-h-screen bg-white dark:bg-zinc-950 text-slate-900 dark:text-zinc-100 font-sans transition-colors duration-300 ${isDarkMode ? 'dark' : ''}`}>
       {/* Top Header */}
       <Header
         activeCategory={activeCategory}
@@ -250,7 +276,6 @@ export default function HomePage() {
         onRefresh={() => fetchNews(activeCategory, true, false)}
         isLoading={isLoading || isRefreshing}
         bookmarkCount={bookmarkedIds.length}
-        onOpenFeedManager={() => setIsFeedManagerOpen(true)}
       />
 
       {/* Breaking News Ticker (G1 Live Ticker Style) */}
@@ -538,7 +563,7 @@ export default function HomePage() {
                   {/* Plantão Editorial Radar */}
                   <div className="bg-gradient-to-br from-red-50 to-zinc-50 dark:from-zinc-900 dark:to-zinc-900/80 border border-red-100 dark:border-red-900/30 rounded-3xl p-5 shadow-sm space-y-3">
                     <div className="flex items-center gap-2 text-xs font-bold text-red-700 dark:text-red-400">
-                      <Sparkles className="w-4 h-4 text-red-600" />
+                      <Compass className="w-4 h-4 text-red-600" />
                       <span>Plantão Portal News</span>
                     </div>
                     <p className="text-xs text-slate-600 dark:text-zinc-300 leading-relaxed">
@@ -591,13 +616,6 @@ export default function HomePage() {
           <ArrowUp className="w-5 h-5" />
         </button>
       )}
-
-      {/* Official Verified Editorial Channels Modal */}
-      <FeedManagerModal
-        isOpen={isFeedManagerOpen}
-        onClose={() => setIsFeedManagerOpen(false)}
-        feeds={customFeeds}
-      />
 
       {/* Footer */}
       <Footer setActiveCategory={setActiveCategory} />

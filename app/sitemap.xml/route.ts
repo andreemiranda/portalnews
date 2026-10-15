@@ -1,10 +1,11 @@
 import { NextResponse } from 'next/server';
-import { SITE_CONFIG } from '@/lib/site-config';
+import { getBaseUrl } from '@/lib/site-config';
+import { getSeoCacheHeaders } from '@/lib/seo';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET() {
-  const domain = SITE_CONFIG.domain.replace(/\/+$/, '');
+  const domain = getBaseUrl();
   const now = new Date().toISOString();
 
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
@@ -31,7 +32,7 @@ export async function GET() {
   return new NextResponse(xml, {
     headers: {
       'Content-Type': 'application/xml; charset=utf-8',
-      'Cache-Control': 'public, max-age=3600, s-maxage=3600',
+      ...getSeoCacheHeaders(3600, 7200),
     },
   });
 }

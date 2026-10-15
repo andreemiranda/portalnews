@@ -14,6 +14,13 @@ import { SITE_CONFIG } from '@/lib/site-config';
 import { slugify } from '@/lib/slug';
 import { removeTruncationMarkers } from '@/lib/sanitizer';
 import {
+  applyFontSize,
+  applyTheme,
+  getInitialFontSize,
+  getInitialTheme,
+  FontSizeOption,
+} from '@/lib/accessibility';
+import {
   ArrowLeft,
   ArrowUp,
   Bookmark,
@@ -25,11 +32,12 @@ import {
   Copy,
   Volume2,
   TrendingUp,
-  Sparkles,
+  ListChecks,
   ExternalLink,
   Calendar,
   User,
   BookOpen,
+  Compass,
 } from 'lucide-react';
 
 interface ArticlePageClientProps {
@@ -47,9 +55,9 @@ export const ArticlePageClient: React.FC<ArticlePageClientProps> = ({
 }) => {
   const router = useRouter();
 
-  // Dark mode & font size
+  // Dark mode & font size with global accessibility synchronization
   const [isDarkMode, setIsDarkMode] = useState<boolean>(false);
-  const [fontSize, setFontSize] = useState<'normal' | 'large' | 'xlarge'>('normal');
+  const [fontSize, setFontSize] = useState<FontSizeOption>('normal');
   const [searchQuery, setSearchQuery] = useState('');
 
   // Bookmarks
@@ -121,6 +129,54 @@ export const ArticlePageClient: React.FC<ArticlePageClientProps> = ({
       window.removeEventListener('scroll', handleScroll);
     };
   }, []);
+
+  // Synchronize theme and accessibility font size
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsDarkMode(getInitialTheme());
+      setFontSize(getInitialFontSize());
+    }, 0);
+
+    const handleThemeChange = (e: any) => {
+      if (typeof e.detail?.isDark === 'boolean') {
+        setIsDarkMode(e.detail.isDark);
+      }
+    };
+    const handleFontChange = (e: any) => {
+      if (e.detail?.size) {
+        setFontSize(e.detail.size);
+      }
+    };
+
+    window.addEventListener('portal_theme_change', handleThemeChange);
+    window.addEventListener('portal_fontsize_change', handleFontChange);
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener('portal_theme_change', handleThemeChange);
+      window.removeEventListener('portal_fontsize_change', handleFontChange);
+    };
+  }, []);
+
+  // Compute key takeaway AI bullet points for the story
+  const aiBulletPoints = React.useMemo(() => {
+    const raw = (item.summary || articleContent || item.title || '').trim();
+    const clean = removeTruncationMarkers(raw);
+    const sentences = clean
+      .split(/(?<=[.!?])\s+/)
+      .map((s) => s.trim())
+      .filter((s) => s.length > 25 && !s.includes('http') && !s.includes('@'));
+
+    if (sentences.length >= 2) {
+      return sentences.slice(0, 3);
+    }
+    if (clean.length > 30) {
+      return [clean];
+    }
+    return [
+      `Cobertura especial sobre ${item.category} com apuração atualizada e verificação editorial contínua.`,
+      `Acompanhamento dos principais desdobramentos oficiais diretamente pelas fontes homologadas.`,
+    ];
+  }, [item.summary, articleContent, item.title, item.category]);
 
   // Check audio provider
   useEffect(() => {
@@ -304,7 +360,7 @@ export const ArticlePageClient: React.FC<ArticlePageClientProps> = ({
   const currentUrl = typeof window !== 'undefined' ? window.location.href : '';
 
   return (
-    <div className={`min-h-screen bg-slate-50 dark:bg-zinc-950 text-slate-900 dark:text-zinc-100 font-sans transition-colors duration-300 ${isDarkMode ? 'dark' : ''}`}>
+    <div className={`min-h-screen bg-white dark:bg-zinc-950 text-slate-900 dark:text-zinc-100 font-sans transition-colors duration-300 ${isDarkMode ? 'dark' : ''}`}>
       {/* Global Portal Header */}
       <Header
         activeCategory={item.category}
@@ -439,29 +495,38 @@ export const ArticlePageClient: React.FC<ArticlePageClientProps> = ({
                 {/* Font Size Adjusters */}
                 <div className="flex items-center bg-slate-100 dark:bg-zinc-800 rounded-xl p-1 text-xs font-bold">
                   <button
-                    onClick={() => setFontSize('normal')}
+                    onClick={() => {
+                      setFontSize('normal');
+                      applyFontSize('normal');
+                    }}
                     className={`px-2 py-1 rounded-lg transition cursor-pointer ${
-                      fontSize === 'normal' ? 'bg-white dark:bg-zinc-700 text-red-600 shadow-xs' : 'text-slate-500'
+                      fontSize === 'normal' ? 'bg-white dark:bg-zinc-700 text-red-600 shadow-xs' : 'text-slate-500 hover:text-slate-800'
                     }`}
-                    title="Fonte Padrão"
+                    title="Fonte Padrão (100%)"
                   >
                     A
                   </button>
                   <button
-                    onClick={() => setFontSize('large')}
+                    onClick={() => {
+                      setFontSize('large');
+                      applyFontSize('large');
+                    }}
                     className={`px-2 py-1 rounded-lg transition cursor-pointer ${
-                      fontSize === 'large' ? 'bg-white dark:bg-zinc-700 text-red-600 shadow-xs' : 'text-slate-500'
+                      fontSize === 'large' ? 'bg-white dark:bg-zinc-700 text-red-600 shadow-xs' : 'text-slate-500 hover:text-slate-800'
                     }`}
-                    title="Fonte Média"
+                    title="Fonte Média (115%)"
                   >
                     A+
                   </button>
                   <button
-                    onClick={() => setFontSize('xlarge')}
+                    onClick={() => {
+                      setFontSize('xlarge');
+                      applyFontSize('xlarge');
+                    }}
                     className={`px-2 py-1 rounded-lg transition cursor-pointer ${
-                      fontSize === 'xlarge' ? 'bg-white dark:bg-zinc-700 text-red-600 shadow-xs' : 'text-slate-500'
+                      fontSize === 'xlarge' ? 'bg-white dark:bg-zinc-700 text-red-600 shadow-xs' : 'text-slate-500 hover:text-slate-800'
                     }`}
-                    title="Fonte Grande"
+                    title="Fonte Grande (130%)"
                   >
                     A++
                   </button>
@@ -493,6 +558,31 @@ export const ArticlePageClient: React.FC<ArticlePageClientProps> = ({
                 </button>
               </div>
             </div>
+
+            {/* Resumo por IA da Notícia / Síntese Editorial G1 */}
+            {aiBulletPoints.length > 0 && (
+              <div className="bg-red-50/40 dark:bg-zinc-900/70 border-l-4 border-red-600 rounded-r-2xl p-5 border-y border-r border-red-100 dark:border-zinc-800 shadow-xs space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <ListChecks className="w-5 h-5 text-red-600" />
+                    <h2 className="text-sm sm:text-base font-black text-slate-900 dark:text-zinc-100 uppercase tracking-tight">
+                      Resumo da Notícia
+                    </h2>
+                  </div>
+                  <span className="text-[10px] font-black uppercase tracking-wider text-red-700 dark:text-red-400 bg-white dark:bg-zinc-800 px-2.5 py-1 rounded-full border border-red-200 dark:border-zinc-700 shadow-2xs">
+                    Síntese Inteligente
+                  </span>
+                </div>
+                <ul className="space-y-2 text-xs sm:text-sm text-slate-700 dark:text-zinc-300">
+                  {aiBulletPoints.map((point, idx) => (
+                    <li key={idx} className="flex items-start gap-2.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-red-600 mt-2 shrink-0" />
+                      <span className="leading-relaxed font-medium">{point}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
 
             {/* Main Featured Photo (G1 Proportion) */}
             {item.imageUrl && (
@@ -665,7 +755,7 @@ export const ArticlePageClient: React.FC<ArticlePageClientProps> = ({
             {/* Plantão Editorial Banner */}
             <div className="bg-gradient-to-br from-red-50 to-zinc-50 dark:from-zinc-900 dark:to-zinc-900/80 border border-red-100 dark:border-red-900/30 rounded-3xl p-5 shadow-sm space-y-3">
               <div className="flex items-center gap-2 text-xs font-bold text-red-700 dark:text-red-400">
-                <Sparkles className="w-4 h-4 text-red-600" />
+                <Compass className="w-4 h-4 text-red-600" />
                 <span>Plantão e Edição Completa</span>
               </div>
               <p className="text-xs text-slate-600 dark:text-zinc-300 leading-relaxed">

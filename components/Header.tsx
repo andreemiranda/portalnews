@@ -6,14 +6,13 @@ import {
   Bookmark,
   Sun,
   Moon,
-  Rss,
   RotateCw,
   Clock,
   Compass,
-  Radio,
 } from 'lucide-react';
 import { AdSenseBanner } from './AdSenseBanner';
 import { SITE_CONFIG } from '@/lib/site-config';
+import { applyTheme, applyFontSize, FontSizeOption } from '@/lib/accessibility';
 
 interface HeaderProps {
   searchQuery: string;
@@ -23,11 +22,11 @@ interface HeaderProps {
   setActiveCategory: (cat: string) => void;
   onRefresh: () => void;
   isLoading: boolean;
-  fontSize: 'normal' | 'large' | 'xlarge';
-  setFontSize: (size: 'normal' | 'large' | 'xlarge') => void;
+  fontSize: FontSizeOption;
+  setFontSize: (size: FontSizeOption) => void;
   isDarkMode: boolean;
   setIsDarkMode: (dark: boolean) => void;
-  onOpenFeedManager: () => void;
+  onOpenFeedManager?: () => void;
   lastUpdatedTime?: string;
 }
 
@@ -43,7 +42,6 @@ export const Header: React.FC<HeaderProps> = ({
   setFontSize,
   isDarkMode,
   setIsDarkMode,
-  onOpenFeedManager,
   lastUpdatedTime,
 }) => {
   const [clientDate, setClientDate] = useState<string>('');
@@ -63,6 +61,37 @@ export const Header: React.FC<HeaderProps> = ({
     });
     return () => cancelAnimationFrame(frameId);
   }, []);
+
+  const handleDecreaseFont = () => {
+    if (fontSize === 'xlarge') {
+      setFontSize('large');
+      applyFontSize('large');
+    } else {
+      setFontSize('normal');
+      applyFontSize('normal');
+    }
+  };
+
+  const handleIncreaseFont = () => {
+    if (fontSize === 'normal') {
+      setFontSize('large');
+      applyFontSize('large');
+    } else {
+      setFontSize('xlarge');
+      applyFontSize('xlarge');
+    }
+  };
+
+  const handleSetFont = (size: FontSizeOption) => {
+    setFontSize(size);
+    applyFontSize(size);
+  };
+
+  const handleToggleTheme = () => {
+    const nextDark = !isDarkMode;
+    setIsDarkMode(nextDark);
+    applyTheme(nextDark);
+  };
 
   return (
     <header className="border-b border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 transition-colors">
@@ -91,53 +120,79 @@ export const Header: React.FC<HeaderProps> = ({
           </div>
 
           <div className="flex items-center gap-3">
-            <span className="text-zinc-400 hidden md:inline">Tamanho da fonte:</span>
-            <div className="flex items-center bg-zinc-800 rounded p-0.5 border border-zinc-700">
+            <span className="text-zinc-400 hidden md:inline text-[11px] font-medium">Acessibilidade:</span>
+            
+            {/* Accessibility Font Size Buttons */}
+            <div className="flex items-center bg-zinc-800 rounded p-0.5 border border-zinc-700" role="group" aria-label="Ajustar tamanho da fonte">
+              <button
+                id="font-size-decrease"
+                onClick={handleDecreaseFont}
+                className="px-2 py-0.5 rounded text-[10px] font-bold text-zinc-400 hover:text-white hover:bg-zinc-700 transition cursor-pointer"
+                title="Diminuir fonte (A-)"
+                aria-label="Diminuir fonte"
+              >
+                A-
+              </button>
               <button
                 id="font-size-normal"
-                onClick={() => setFontSize('normal')}
-                className={`px-2 py-0.5 rounded text-[11px] font-bold transition ${
+                onClick={() => handleSetFont('normal')}
+                className={`px-2 py-0.5 rounded text-[11px] font-bold transition cursor-pointer ${
                   fontSize === 'normal'
                     ? 'bg-red-600 text-white'
                     : 'text-zinc-400 hover:text-white'
                 }`}
-                title="Tamanho normal"
+                title="Tamanho normal padrão (100%)"
+                aria-label="Tamanho normal padrão"
               >
                 A
               </button>
               <button
                 id="font-size-large"
-                onClick={() => setFontSize('large')}
-                className={`px-2 py-0.5 rounded text-[12px] font-bold transition ${
+                onClick={() => handleSetFont('large')}
+                className={`px-2 py-0.5 rounded text-[12px] font-bold transition cursor-pointer ${
                   fontSize === 'large'
                     ? 'bg-red-600 text-white'
                     : 'text-zinc-400 hover:text-white'
                 }`}
-                title="Tamanho grande"
+                title="Aumentar fonte (115%)"
+                aria-label="Fonte média"
               >
                 A+
               </button>
               <button
                 id="font-size-xlarge"
-                onClick={() => setFontSize('xlarge')}
-                className={`px-2 py-0.5 rounded text-[13px] font-bold transition ${
+                onClick={() => handleSetFont('xlarge')}
+                className={`px-2 py-0.5 rounded text-[13px] font-bold transition cursor-pointer ${
                   fontSize === 'xlarge'
                     ? 'bg-red-600 text-white'
                     : 'text-zinc-400 hover:text-white'
                 }`}
-                title="Tamanho extra grande"
+                title="Fonte extra grande (130%)"
+                aria-label="Fonte extra grande"
               >
                 A++
               </button>
             </div>
 
+            {/* Dark Mode Toggle Button */}
             <button
               id="theme-toggle-button"
-              onClick={() => setIsDarkMode(!isDarkMode)}
-              className="p-1.5 rounded hover:bg-zinc-800 text-zinc-300 hover:text-white transition flex items-center gap-1"
-              title={isDarkMode ? 'Modo Claro' : 'Modo Escuro'}
+              onClick={handleToggleTheme}
+              className="px-2.5 py-1 rounded bg-zinc-800 hover:bg-zinc-700 text-zinc-200 hover:text-white border border-zinc-700 transition flex items-center gap-1.5 cursor-pointer text-xs font-bold"
+              title={isDarkMode ? 'Alternar para Modo Claro' : 'Alternar para Modo Escuro'}
+              aria-label={isDarkMode ? 'Ativar Modo Claro' : 'Ativar Modo Escuro'}
             >
-              {isDarkMode ? <Sun className="w-3.5 h-3.5 text-amber-400" /> : <Moon className="w-3.5 h-3.5" />}
+              {isDarkMode ? (
+                <>
+                  <Sun className="w-3.5 h-3.5 text-amber-400" />
+                  <span className="text-[11px]">Modo Claro</span>
+                </>
+              ) : (
+                <>
+                  <Moon className="w-3.5 h-3.5 text-zinc-300" />
+                  <span className="text-[11px]">Modo Escuro</span>
+                </>
+              )}
             </button>
           </div>
         </div>
@@ -146,7 +201,7 @@ export const Header: React.FC<HeaderProps> = ({
       {/* Main Masthead Header */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
         <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-          {/* Logo & Brand with Header Favicon Icon */}
+          {/* Logo & Brand */}
           <div
             className="flex items-center gap-4 text-center md:text-left cursor-pointer group"
             onClick={() => setActiveCategory('all')}
@@ -203,16 +258,6 @@ export const Header: React.FC<HeaderProps> = ({
               </button>
 
               <button
-                id="open-feed-manager-button"
-                onClick={onOpenFeedManager}
-                className="px-3.5 py-2 rounded-full border border-slate-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 hover:border-red-500 hover:text-red-600 dark:hover:border-red-500 dark:hover:text-red-400 hover:bg-red-50/60 dark:hover:bg-red-950/30 transition flex items-center gap-1.5 text-xs font-bold shadow-sm cursor-pointer"
-                title="Gerenciar Canais e Fontes de Notícias"
-              >
-                <Rss className="w-4 h-4 text-red-600" />
-                <span className="hidden lg:inline">76 Canais</span>
-              </button>
-
-              <button
                 id="bookmarks-tab-button"
                 onClick={() => setActiveCategory('favoritos')}
                 className={`px-4 py-2 rounded-full border text-xs font-extrabold flex items-center gap-2 transition shadow-sm cursor-pointer ${
@@ -233,7 +278,7 @@ export const Header: React.FC<HeaderProps> = ({
           </div>
         </div>
 
-        {/* Localized Header AdSense Ad Slot (without placeholder) */}
+        {/* Localized Header AdSense Ad Slot */}
         <AdSenseBanner slot={SITE_CONFIG.adsense.slots.header} format="horizontal" />
       </div>
     </header>

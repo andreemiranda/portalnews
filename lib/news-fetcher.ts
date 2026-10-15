@@ -11,7 +11,7 @@ interface CacheEntry {
 }
 
 const memoryCache: Record<string, CacheEntry> = {};
-const CACHE_TTL_MS = 45 * 1000; // 45 seconds cache
+const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes high-speed cache for instant article opening
 
 export const DEFAULT_ALL_SOURCE_IDS = [
   '832514384744418', // Pará
@@ -319,6 +319,20 @@ async function fetchFromUpstreamSource(source: NewsApiSourceItem): Promise<NewsI
   return sanitizedItems;
 }
 
+// Instant O(1) in-memory index for all news articles by slug, title-slug, and id
+const itemIndexMap = new Map<string, NewsItem>();
+
+function indexNewsItems(items: NewsItem[]) {
+  for (const item of items) {
+    if (item.slug) itemIndexMap.set(item.slug.toLowerCase().trim(), item);
+    if (item.id) itemIndexMap.set(String(item.id).toLowerCase().trim(), item);
+    if (item.title) {
+      itemIndexMap.set(slugify(item.title).toLowerCase().trim(), item);
+      itemIndexMap.set(slugify(item.title, item.id).toLowerCase().trim(), item);
+    }
+  }
+}
+
 export async function getLiveNews(options: {
   category?: string;
   sourceId?: string | null;
@@ -333,6 +347,7 @@ export async function getLiveNews(options: {
   const cacheKey = `${category}_${sourceId || ''}_${query}`;
 
   if (!force && memoryCache[cacheKey] && Date.now() - memoryCache[cacheKey].timestamp < CACHE_TTL_MS) {
+    indexNewsItems(memoryCache[cacheKey].data);
     return memoryCache[cacheKey].data;
   }
 
@@ -444,61 +459,60 @@ export async function getLiveNews(options: {
     timestamp: Date.now(),
     data: finalItems,
   };
+  indexNewsItems(finalItems);
 
   return finalItems;
 }
 
 /**
- * Busca uma notícia específica pelo seu slug ou id
+ * Busca uma notícia específica pelo seu slug ou id com resolução instantânea
  */
 export async function getNewsItemBySlugOrId(slugOrId: string): Promise<NewsItem | null> {
   if (!slugOrId) return null;
   const target = decodeURIComponent(slugOrId).toLowerCase().trim();
 
-  // 1. Busca exata no cache ou carrega todas as notícias
+  // 1. Resolução ultrarrápida O(1) pelo índice em memória
+  if (itemIndexMap.has(target)) {
+    return itemIndexMap.get(target)!;
+  }
+
+  // 2. Busca aproximada no índice de artigos conhecidos
+  for (const item of itemIndexMap.values()) {
+    const s = (item.slug || '').toLowerCase();
+    const st = slugify(item.title || '').toLowerCase();
+    if (s === target || st === target || s.includes(target) || target.includes(s)) {
+      return item;
+    }
+  }
+
+  // 3. Verificação em caches existentes em memória sem novas requisições de rede
+  for (const entry of Object.values(memoryCache)) {
+    if (entry?.data) {
+      const match = entry.data.find(
+        (it) =>
+          it.slug.toLowerCase() === target ||
+          slugify(it.title).toLowerCase() === target ||
+          String(it.id).toLowerCase() === target ||
+          (it.slug && (it.slug.toLowerCase().includes(target) || target.includes(it.slug.toLowerCase())))
+      );
+      if (match) {
+        indexNewsItems(entry.data);
+        return match;
+      }
+    }
+  }
+
+  // 4. Se não estiver no cache, carrega todas as notícias da home
   const allItems = await getLiveNews({ category: 'all' });
   const found = allItems.find(
     (item) =>
       item.slug.toLowerCase() === target ||
       slugify(item.title).toLowerCase() === target ||
       item.id.toLowerCase() === target ||
-      item.id === slugOrId
+      item.id === slugOrId ||
+      (item.slug && (item.slug.toLowerCase().includes(target) || target.includes(item.slug.toLowerCase())))
   );
   if (found) return found;
-
-  // 2. Busca aproximada por inclusão de slug no conjunto geral
-  const partial = allItems.find(
-    (item) =>
-      (item.slug && (item.slug.toLowerCase().includes(target) || target.includes(item.slug.toLowerCase()))) ||
-      slugify(item.title).toLowerCase().includes(target) ||
-      target.includes(slugify(item.title).toLowerCase())
-  );
-  if (partial) return partial;
-
-  // 3. Fallback nas categorias específicas
-  const categories = [
-    'Notícias Gerais',
-    'Economia',
-    'Justiça',
-    'Educação',
-    'Pará',
-    'Tocantins',
-    'Mundo',
-    'Tecnologia e Games',
-    'Esporte',
-    'Política',
-  ];
-  for (const cat of categories) {
-    const catItems = await getLiveNews({ category: cat });
-    const match = catItems.find(
-      (item) =>
-        item.slug.toLowerCase() === target ||
-        slugify(item.title).toLowerCase() === target ||
-        item.id.toLowerCase() === target ||
-        (item.slug && (item.slug.toLowerCase().includes(target) || target.includes(item.slug.toLowerCase())))
-    );
-    if (match) return match;
-  }
 
   return null;
 }

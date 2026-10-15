@@ -14,7 +14,6 @@ import {
   MapPin,
   RefreshCw,
   Eye,
-  Sparkles,
 } from 'lucide-react';
 
 interface WeatherData {
@@ -260,7 +259,7 @@ export const WeatherCard: React.FC = () => {
 
         {/* Theme Status */}
         <div className="flex items-center gap-2 p-2 rounded-xl bg-white/10 backdrop-blur-sm border border-white/10">
-          <Sparkles className="w-4 h-4 text-yellow-200 shrink-0" />
+          <Sun className="w-4 h-4 text-yellow-200 shrink-0" />
           <div>
             <p className="text-[10px] uppercase font-bold opacity-75">Clima Atual</p>
             <p className="font-extrabold capitalize">

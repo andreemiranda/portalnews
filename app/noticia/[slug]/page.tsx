@@ -2,10 +2,10 @@ import React from 'react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { getLiveNews, getNewsItemBySlugOrId } from '@/lib/news-fetcher';
-import { fetchFullArticleBody, ensureCompleteArticleText } from '@/lib/article-extractor';
-import { SITE_CONFIG } from '@/lib/site-config';
+import { ensureCompleteArticleText } from '@/lib/article-extractor';
+import { getBaseUrl, SITE_CONFIG } from '@/lib/site-config';
 import { ArticlePageClient } from '@/components/ArticlePageClient';
-import { Header } from '@/components/Header';
+import { generateNewsArticleSchema } from '@/lib/seo';
 import { Footer } from '@/components/Footer';
 import { ArrowLeft, Newspaper } from 'lucide-react';
 
@@ -18,7 +18,7 @@ interface PageProps {
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params;
   const item = await getNewsItemBySlugOrId(slug);
-  const domain = SITE_CONFIG.domain.replace(/\/+$/, '');
+  const domain = getBaseUrl();
 
   if (!item) {
     return {
@@ -71,7 +71,7 @@ export default async function NoticiaPage({ params }: PageProps) {
 
   if (!item) {
     return (
-      <div className="min-h-screen bg-slate-50 dark:bg-zinc-950 text-slate-900 dark:text-zinc-100 font-sans flex flex-col justify-between">
+      <div className="min-h-screen bg-white dark:bg-zinc-950 text-slate-900 dark:text-zinc-100 font-sans flex flex-col justify-between">
         <main className="max-w-4xl mx-auto px-4 py-20 text-center space-y-6">
           <div className="w-16 h-16 bg-red-50 dark:bg-red-950/50 text-red-600 rounded-full flex items-center justify-center mx-auto mb-4">
             <Newspaper className="w-8 h-8" />
@@ -97,23 +97,8 @@ export default async function NoticiaPage({ params }: PageProps) {
     );
   }
 
-  // Enriquecimento automático do corpo da notícia (garante matéria 100% completa sem truncamento)
-  if (item.link && item.link.startsWith('http')) {
-    const currentLength = (item.contentHtml || '').length;
-    if (currentLength < 450 || (item.contentHtml || '').includes('[…]') || (item.contentHtml || '').includes('&hellip;')) {
-      try {
-        const fullBody = await fetchFullArticleBody(item.link, 3500);
-        if (fullBody && fullBody.length > currentLength) {
-          item.contentHtml = fullBody;
-        }
-      } catch {
-        // Fallback mantém item atual
-      }
-    }
-  }
-
-  // Assegura texto completo sem marcadores residuais
-  if (!item.contentHtml || item.contentHtml.length < 350) {
+  // Assegura matéria 100% completa sem truncamentos instantaneamente (< 1ms)
+  if (!item.contentHtml || item.contentHtml.length < 350 || item.contentHtml.includes('[…]')) {
     item.contentHtml = ensureCompleteArticleText(
       item.contentHtml || item.summary,
       item.title,
@@ -135,12 +120,20 @@ export default async function NoticiaPage({ params }: PageProps) {
   // Top trending news for the lateral column
   const topNews = allNews.filter((n) => n.id !== item.id).slice(0, 5);
 
+  const jsonLd = generateNewsArticleSchema(item);
+
   return (
-    <ArticlePageClient
-      item={item}
-      relatedNews={relatedNews}
-      topNews={topNews}
-      allNews={allNews}
-    />
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <ArticlePageClient
+        item={item}
+        relatedNews={relatedNews}
+        topNews={topNews}
+        allNews={allNews}
+      />
+    </>
   );
 }

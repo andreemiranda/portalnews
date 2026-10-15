@@ -1,14 +1,34 @@
+/**
+ * Configurações Centrais do Portal News
+ * Domínio, URLs canônicas, AdSense e Integrações
+ */
+
+export function getBaseUrl(): string {
+  const envUrl =
+    process.env.NEXT_PUBLIC_SITE_URL ||
+    process.env.SITE_DOMAIN ||
+    process.env.APP_URL ||
+    'https://ais-dev-qyzbaiotwmw74wkgcp56qo-771752383788.us-east1.run.app';
+
+  let normalized = envUrl.trim();
+  if (!normalized) {
+    normalized = 'https://portalnews.com.br';
+  }
+  if (!/^https?:\/\//i.test(normalized)) {
+    normalized = `https://${normalized}`;
+  }
+  return normalized.replace(/\/+$/, '');
+}
+
 export const SITE_CONFIG = {
   name: 'Portal News',
   shortName: 'Portal News',
   tagline: 'Jornalismo • Brasil e Cobertura Completa',
   description:
     'Portal de notícias com cobertura de política, economia, justiça, educação, esportes, tecnologia e notícias dos estados brasileiros.',
-  domain:
-    process.env.NEXT_PUBLIC_SITE_URL ||
-    process.env.SITE_DOMAIN ||
-    process.env.APP_URL ||
-    'https://ais-dev-qyzbaiotwmw74wkgcp56qo-771752383788.us-east1.run.app',
+  get domain(): string {
+    return getBaseUrl();
+  },
   adsense: {
     clientId:
       process.env.NEXT_PUBLIC_ADSENSE_ID ||

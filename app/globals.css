@@ -1,6 +1,9 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
+/* Tailwind CSS v4 Class-based Dark Mode Variant */
+@custom-variant dark (&:where(.dark, .dark *));
+
 @layer utilities {
   @keyframes marquee {
     0% { transform: translateX(0%); }
@@ -72,47 +75,30 @@ html.dark ::-webkit-scrollbar-thumb {
 }
 
 /* ==============================================================================
-   2. Barra de rolagem horizontal no menu superior na cor vermelha
+   2. Menu horizontal em linha sem barra de rolagem (No scrollbar)
    ============================================================================== */
-.scrollbar-menu-red {
-  scrollbar-color: #dc2626 rgba(220, 38, 38, 0.12);
-  scrollbar-width: thin;
-  overflow-x: auto;
-  scroll-behavior: smooth;
+.no-scrollbar {
+  -ms-overflow-style: none !important;
+  scrollbar-width: none !important;
 }
 
-.dark .scrollbar-menu-red,
-html.dark .scrollbar-menu-red {
-  scrollbar-color: #dc2626 rgba(220, 38, 38, 0.25);
+.no-scrollbar::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
 }
 
-.scrollbar-menu-red::-webkit-scrollbar {
-  height: 6px;
-  width: 6px;
+/* ==============================================================================
+   3. Acessibilidade Global - Escala de Tamanho da Fonte
+   ============================================================================== */
+html[data-font-size="normal"] {
+  font-size: 16px;
 }
 
-.scrollbar-menu-red::-webkit-scrollbar-track {
-  background: rgba(220, 38, 38, 0.08);
-  border-radius: 9999px;
-  margin: 0 4px;
+html[data-font-size="large"] {
+  font-size: 18.5px;
 }
 
-.dark .scrollbar-menu-red::-webkit-scrollbar-track,
-html.dark .scrollbar-menu-red::-webkit-scrollbar-track {
-  background: rgba(220, 38, 38, 0.2);
-  border-radius: 9999px;
-}
-
-.scrollbar-menu-red::-webkit-scrollbar-thumb {
-  background: #dc2626;
-  border-radius: 9999px;
-  box-shadow: 0 1px 3px rgba(220, 38, 38, 0.3);
-}
-
-.scrollbar-menu-red::-webkit-scrollbar-thumb:hover {
-  background: #b91c1c;
-}
-
-.scrollbar-menu-red::-webkit-scrollbar-thumb:active {
-  background: #991b1b;
+html[data-font-size="xlarge"] {
+  font-size: 21px;
 }

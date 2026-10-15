@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
-import { SITE_CONFIG } from '@/lib/site-config';
+import { getBaseUrl, SITE_CONFIG } from '@/lib/site-config';
 import { getLiveNews } from '@/lib/news-fetcher';
 import { slugify } from '@/lib/slug';
+import { getSeoCacheHeaders } from '@/lib/seo';
 
 export const dynamic = 'force-dynamic';
 
@@ -26,7 +27,7 @@ function escapeXml(unsafe: string): string {
 }
 
 export async function GET() {
-  const domain = SITE_CONFIG.domain.replace(/\/+$/, '');
+  const domain = getBaseUrl();
   const now = new Date().toISOString();
 
   let items: any[] = [];
@@ -40,7 +41,7 @@ export async function GET() {
 <?xml-stylesheet type="text/xsl" href="/sitemap.xsl"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:news="http://www.google.com/schemas/sitemap-news/0.9">
 ${items
-  .slice(0, 100)
+  .slice(0, 150)
   .map((item) => {
     const pubDate = item.isoDate || item.pubDate || now;
     const articleSlug = item.slug || slugify(item.title, item.id);
@@ -73,7 +74,7 @@ ${items
   return new NextResponse(xml, {
     headers: {
       'Content-Type': 'application/xml; charset=utf-8',
-      'Cache-Control': 'public, max-age=1800, s-maxage=1800',
+      ...getSeoCacheHeaders(1800, 3600),
     },
   });
 }

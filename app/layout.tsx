@@ -1,7 +1,10 @@
 import type { Metadata, Viewport } from 'next';
 import Script from 'next/script';
 import './globals.css';
-import { SITE_CONFIG } from '@/lib/site-config';
+import { SITE_CONFIG, getBaseUrl } from '@/lib/site-config';
+import { generatePortalOrganizationSchema, generateWebSiteSchema } from '@/lib/seo';
+
+const currentDomain = getBaseUrl();
 
 export const viewport: Viewport = {
   themeColor: '#dc2626',
@@ -11,7 +14,7 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  metadataBase: new URL(SITE_CONFIG.domain),
+  metadataBase: new URL(currentDomain),
   title: {
     default: 'Portal News | Notícias e Cobertura Completa • Brasil',
     template: '%s | Portal News',
@@ -45,7 +48,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Portal News | Notícias e Cobertura Completa • Brasil',
     description: SITE_CONFIG.description,
-    url: SITE_CONFIG.domain,
+    url: currentDomain,
     siteName: SITE_CONFIG.name,
     images: [
       {
@@ -65,7 +68,7 @@ export const metadata: Metadata = {
     images: ['/cover.png'],
   },
   alternates: {
-    canonical: SITE_CONFIG.domain,
+    canonical: currentDomain,
   },
   robots: {
     index: true,
@@ -81,22 +84,30 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
-  const jsonLd = {
-    '@context': 'https://schema.org',
-    '@type': 'NewsMediaOrganization',
-    name: SITE_CONFIG.name,
-    url: SITE_CONFIG.domain,
-    logo: `${SITE_CONFIG.domain}/icon-512.png`,
-    description: SITE_CONFIG.description,
-    sameAs: [],
-  };
-
+  const orgSchema = generatePortalOrganizationSchema();
+  const webSiteSchema = generateWebSiteSchema();
   const adsenseClientId = SITE_CONFIG.adsense.clientId;
+
+  // Extrai dinamicamente a origem da URL base para tags DNS Prefetch / Preconnect
+  let apiOrigin = currentDomain;
+  try {
+    apiOrigin = new URL(currentDomain).origin;
+  } catch {
+    apiOrigin = currentDomain;
+  }
 
   return (
     <html lang="pt-BR" suppressHydrationWarning>
       <head>
-        {/* Google AdSense Script - loads afterInteractive to prevent hydration mismatch */}
+        {/* DNS Prefetch e Preconnect dinâmicos automáticos conforme variáveis de domínio do código */}
+        <link rel="dns-prefetch" href={apiOrigin} />
+        <link rel="preconnect" href={apiOrigin} crossOrigin="anonymous" />
+        <link rel="dns-prefetch" href="https://pagead2.googlesyndication.com" />
+        <link rel="preconnect" href="https://pagead2.googlesyndication.com" crossOrigin="anonymous" />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+
+        {/* Google AdSense Script */}
         {adsenseClientId && (
           <Script
             id="google-adsense"
@@ -106,10 +117,37 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           />
         )}
 
-        {/* Structured Data JSON-LD */}
+        {/* Structured Data JSON-LD Schemas */}
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(orgSchema) }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(webSiteSchema) }}
+        />
+
+        {/* Global Theme & Accessibility Initializer */}
+        <script
+          id="theme-initializer"
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                try {
+                  var t = localStorage.getItem('portal_theme');
+                  if (t === 'dark' || (!t && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                    document.documentElement.classList.add('dark');
+                    document.documentElement.style.colorScheme = 'dark';
+                  } else {
+                    document.documentElement.classList.remove('dark');
+                    document.documentElement.style.colorScheme = 'light';
+                  }
+                  var fs = localStorage.getItem('portal_font_size') || 'normal';
+                  document.documentElement.setAttribute('data-font-size', fs);
+                } catch (e) {}
+              })();
+            `,
+          }}
         />
 
         {/* PWA & Client Chunk Recovery Script */}
@@ -153,7 +191,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           }}
         />
       </head>
-      <body suppressHydrationWarning>{children}</body>
+      <body suppressHydrationWarning className="bg-white dark:bg-zinc-950 text-slate-900 dark:text-zinc-100 transition-colors">
+        {children}
+      </body>
     </html>
   );
 }

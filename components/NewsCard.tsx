@@ -55,7 +55,7 @@ export const NewsCard: React.FC<NewsCardProps> = ({
         className="bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-2xl p-4 sm:p-5 hover:border-red-500 dark:hover:border-red-500 transition-all cursor-pointer flex items-center gap-4 group shadow-sm hover:shadow-md"
       >
         {item.imageUrl && (
-          <Link href={articleHref} className="shrink-0" onClick={(e) => e.stopPropagation()}>
+          <Link href={articleHref} prefetch={true} className="shrink-0" onClick={(e) => e.stopPropagation()}>
             <div className="w-28 h-24 sm:w-36 sm:h-28 shrink-0 rounded-xl overflow-hidden bg-zinc-950 relative">
               <OptimizedImage
                 src={item.imageUrl}
@@ -80,7 +80,7 @@ export const NewsCard: React.FC<NewsCardProps> = ({
               </span>
             </div>
 
-            <Link href={articleHref} className="block" onClick={(e) => e.stopPropagation()}>
+            <Link href={articleHref} prefetch={true} className="block" onClick={(e) => e.stopPropagation()}>
               <h3
                 className={`font-sans font-bold tracking-tight text-slate-900 dark:text-zinc-100 group-hover:text-red-600 dark:group-hover:text-red-400 transition line-clamp-2 ${fontClasses[fontSize]}`}
               >
@@ -92,6 +92,7 @@ export const NewsCard: React.FC<NewsCardProps> = ({
           <div className="flex items-center justify-between mt-3 pt-2 border-t border-slate-100 dark:border-zinc-800">
             <Link
               href={articleHref}
+              prefetch={true}
               onClick={(e) => e.stopPropagation()}
               className="text-[11px] text-red-600 dark:text-red-400 font-bold group-hover:underline"
             >
@@ -137,7 +138,7 @@ export const NewsCard: React.FC<NewsCardProps> = ({
       <div>
         {/* Card Image */}
         {item.imageUrl ? (
-          <Link href={articleHref} className="block relative h-48 sm:h-52 bg-zinc-950 overflow-hidden" onClick={(e) => e.stopPropagation()}>
+          <Link href={articleHref} prefetch={true} className="block relative h-48 sm:h-52 bg-zinc-950 overflow-hidden" onClick={(e) => e.stopPropagation()}>
             <OptimizedImage
               src={item.imageUrl}
               alt={item.title}
@@ -200,7 +201,7 @@ export const NewsCard: React.FC<NewsCardProps> = ({
             </span>
           </div>
 
-          <Link href={articleHref} className="block" onClick={(e) => e.stopPropagation()}>
+          <Link href={articleHref} prefetch={true} className="block" onClick={(e) => e.stopPropagation()}>
             <h3
               className={`font-sans font-bold tracking-tight text-slate-900 dark:text-zinc-100 group-hover:text-red-600 dark:group-hover:text-red-400 transition leading-snug mb-3 line-clamp-3 ${fontClasses[fontSize]}`}
             >
@@ -218,6 +219,7 @@ export const NewsCard: React.FC<NewsCardProps> = ({
       <div className="px-5 sm:px-6 py-4 bg-slate-50/70 dark:bg-zinc-800/40 border-t border-slate-100 dark:border-zinc-800/80 flex items-center justify-between">
         <Link
           href={articleHref}
+          prefetch={true}
           onClick={(e) => e.stopPropagation()}
           className="text-xs font-bold text-red-600 group-hover:underline"
         >

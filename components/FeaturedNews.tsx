@@ -1,9 +1,11 @@
 'use client';
 
 import React from 'react';
+import Link from 'next/link';
 import { NewsItem } from '@/lib/types';
-import { Sparkles, Clock, Bookmark, ExternalLink, Volume2, ArrowRight, TrendingUp, Landmark } from 'lucide-react';
+import { Clock, Bookmark, ExternalLink, Volume2, ArrowRight, TrendingUp, Landmark } from 'lucide-react';
 import { OptimizedImage } from './OptimizedImage';
+import { slugify } from '@/lib/slug';
 
 interface FeaturedNewsProps {
   item: NewsItem;
@@ -35,11 +37,15 @@ export const FeaturedNews: React.FC<FeaturedNewsProps> = ({
   const sideItem = secondaryItems[0];
   const sideItem2 = secondaryItems[1];
 
+  const articleHref = `/noticia/${item.slug || slugify(item.title, item.id)}`;
+  const sideHref = sideItem ? `/noticia/${sideItem.slug || slugify(sideItem.title, sideItem.id)}` : '#';
+  const sideHref2 = sideItem2 ? `/noticia/${sideItem2.slug || slugify(sideItem2.title, sideItem2.id)}` : '#';
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 mb-8">
       {/* Main Bento Hero Article - Col Span 8 */}
       <div className="lg:col-span-8 bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-3xl overflow-hidden shadow-sm hover:shadow-md transition-all flex flex-col group relative">
-        <div className="relative w-full h-[320px] sm:h-[400px] bg-zinc-950 overflow-hidden cursor-pointer" onClick={() => onSelectNews(item)}>
+        <Link href={articleHref} prefetch={true} className="relative block w-full h-[320px] sm:h-[400px] bg-zinc-950 overflow-hidden cursor-pointer">
           <OptimizedImage
             src={item.imageUrl}
             alt={item.title}
@@ -56,13 +62,14 @@ export const FeaturedNews: React.FC<FeaturedNewsProps> = ({
                 {item.category}
               </span>
               <span className="bg-zinc-900/80 backdrop-blur-md text-amber-300 text-xs font-bold px-3 py-1.5 rounded-full border border-amber-500/30 flex items-center gap-1.5 shadow-sm">
-                <Sparkles className="w-3.5 h-3.5 text-amber-400" /> Destaque Bento
+                <TrendingUp className="w-3.5 h-3.5 text-amber-400" /> Destaque Principal
               </span>
             </div>
 
             <button
               id="featured-bookmark-button"
               onClick={(e) => {
+                e.preventDefault();
                 e.stopPropagation();
                 onToggleBookmark(item);
               }}
@@ -84,7 +91,7 @@ export const FeaturedNews: React.FC<FeaturedNewsProps> = ({
               </span>
             </div>
           </div>
-        </div>
+        </Link>
 
         {/* Caption bar immediately below image */}
         <div className="px-6 py-2 bg-slate-50 dark:bg-zinc-800/40 border-b border-slate-100 dark:border-zinc-800">
@@ -96,12 +103,13 @@ export const FeaturedNews: React.FC<FeaturedNewsProps> = ({
         {/* Text Content Block */}
         <div className="p-6 sm:p-8 flex flex-col justify-between flex-1 bg-white dark:bg-zinc-900">
           <div>
-            <h2
-              onClick={() => onSelectNews(item)}
-              className={`font-sans font-black tracking-tight text-slate-900 dark:text-zinc-100 hover:text-red-600 dark:hover:text-red-400 cursor-pointer transition leading-tight ${fontClasses[fontSize]}`}
-            >
-              {item.title}
-            </h2>
+            <Link href={articleHref} prefetch={true} className="block">
+              <h2
+                className={`font-sans font-black tracking-tight text-slate-900 dark:text-zinc-100 hover:text-red-600 dark:hover:text-red-400 cursor-pointer transition leading-tight ${fontClasses[fontSize]}`}
+              >
+                {item.title}
+              </h2>
+            </Link>
 
             <p className="mt-4 text-slate-600 dark:text-zinc-300 text-sm sm:text-base leading-relaxed line-clamp-2">
               {item.summary}
@@ -111,14 +119,15 @@ export const FeaturedNews: React.FC<FeaturedNewsProps> = ({
           {/* Action Bar */}
           <div className="mt-6 pt-5 border-t border-slate-100 dark:border-zinc-800 flex flex-wrap items-center justify-between gap-3">
             <div className="flex items-center gap-2.5">
-              <button
+              <Link
                 id="featured-read-button"
-                onClick={() => onSelectNews(item)}
-                className="bg-red-600 hover:bg-red-700 text-white font-bold text-xs sm:text-sm px-5 py-2.5 rounded-full shadow-sm transition flex items-center gap-2"
+                href={articleHref}
+                prefetch={true}
+                className="bg-red-600 hover:bg-red-700 text-white font-bold text-xs sm:text-sm px-5 py-2.5 rounded-full shadow-sm transition flex items-center gap-2 cursor-pointer"
               >
                 <span>Ler Matéria</span>
                 <ArrowRight className="w-4 h-4" />
-              </button>
+              </Link>
 
               <button
                 id="featured-audio-button"
@@ -153,14 +162,14 @@ export const FeaturedNews: React.FC<FeaturedNewsProps> = ({
 
           <div className="my-4">
             {sideItem ? (
-              <div onClick={() => onSelectNews(sideItem)} className="cursor-pointer group">
+              <Link href={sideHref} prefetch={true} className="cursor-pointer group block">
                 <h3 className="text-lg font-bold mb-2 leading-snug text-zinc-100 group-hover:text-emerald-400 transition line-clamp-2">
                   {sideItem.title}
                 </h3>
                 <p className="text-slate-400 text-xs leading-relaxed line-clamp-2">
                   {sideItem.summary}
                 </p>
-              </div>
+              </Link>
             ) : (
               <div>
                 <h3 className="text-lg font-bold mb-2 leading-snug text-zinc-100">
@@ -190,14 +199,14 @@ export const FeaturedNews: React.FC<FeaturedNewsProps> = ({
 
           <div className="my-4">
             {sideItem2 ? (
-              <div onClick={() => onSelectNews(sideItem2)} className="cursor-pointer group">
+              <Link href={sideHref2} prefetch={true} className="cursor-pointer group block">
                 <h3 className="text-lg font-bold mb-2 leading-snug text-slate-900 dark:text-zinc-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition line-clamp-2">
                   {sideItem2.title}
                 </h3>
                 <p className="text-slate-500 dark:text-zinc-400 text-xs leading-relaxed line-clamp-2">
                   {sideItem2.summary}
                 </p>
-              </div>
+              </Link>
             ) : (
               <div>
                 <h3 className="text-lg font-bold mb-2 leading-snug text-slate-900 dark:text-zinc-100">
