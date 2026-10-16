@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getBaseUrl } from '@/lib/site-config';
-import { getLiveNews } from '@/lib/news-fetcher';
+import { getLiveNews, isForbiddenImageHost } from '@/lib/news-fetcher';
 import { slugify } from '@/lib/slug';
 import { getSeoCacheHeaders } from '@/lib/seo';
 
@@ -37,9 +37,9 @@ export async function GET() {
     console.error('Failed to get news for sitemap-images:', err);
   }
 
-  // Filter items with real original images
+  // Filter items with real original images, excluding forbidden/broken hosts
   const itemsWithImages = items.filter(
-    (item) => item.imageUrl && item.imageUrl.startsWith('http')
+    (item) => item.imageUrl && item.imageUrl.startsWith('http') && !isForbiddenImageHost(item.imageUrl)
   );
 
   const xml = `<?xml version="1.0" encoding="UTF-8"?>

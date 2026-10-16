@@ -33,95 +33,102 @@ export const DEFAULT_ALL_SOURCE_IDS = [
 ];
 
 function formatTimeAgo(dateString?: string, rawTimeAgo?: string): string {
-  const candidate = rawTimeAgo || dateString;
-  if (candidate && typeof candidate === 'string') {
-    // Normaliza abreviações legadas ou de feeds externos ("3 hras" -> "3 horas", "1 h" -> "1 hora")
-    if (/\b\d+\s*(hras?|h|mins?)\b/i.test(candidate)) {
-      return candidate
-        .replace(/\b(\d+)\s*hras?\b/gi, '$1 horas')
-        .replace(/\b(\d+)\s*h\b/gi, '$1 horas')
-        .replace(/\b1\s+horas\b/gi, '1 hora')
-        .replace(/\b(\d+)\s*mins?\b/gi, '$1 minutos')
-        .replace(/\b1\s+minutos\b/gi, '1 minuto');
-    }
-  }
-
-  if (!dateString) return 'Recente';
+  if (!dateString) return rawTimeAgo || 'Recente';
   const date = new Date(dateString);
-  if (isNaN(date.getTime())) return 'Recente';
+  if (isNaN(date.getTime())) return rawTimeAgo || 'Recente';
 
   const now = new Date();
   const diffInSeconds = Math.max(0, Math.floor((now.getTime() - date.getTime()) / 1000));
 
+  // Menos de 1 minuto
   if (diffInSeconds < 60) return 'Agora mesmo';
+
+  // Menos de 1 hora: em minutos
   if (diffInSeconds < 3600) {
     const mins = Math.floor(diffInSeconds / 60);
     return `Há ${mins} ${mins === 1 ? 'minuto' : 'minutos'}`;
   }
+
+  // Menos de 24 horas: em horas
   if (diffInSeconds < 86400) {
     const hours = Math.floor(diffInSeconds / 3600);
     return `Há ${hours} ${hours === 1 ? 'hora' : 'horas'}`;
   }
-  const days = Math.floor(diffInSeconds / 86400);
-  if (days === 1) return 'Ontem';
-  return `Há ${days} dias`;
+
+  // Entre 24 e 48 horas: Ontem
+  if (diffInSeconds < 172800) {
+    return 'Ontem';
+  }
+
+  // Posterior a 48 horas: SOMENTE a data no formato dd/mm/aaaa
+  const day = String(date.getDate()).padStart(2, '0');
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const year = date.getFullYear();
+  return `${day}/${month}/${year}`;
 }
 
-// Extract only original source images from API or image records.
+// Hosts that block server-side requests (Cloudflare 403 / anti-hotlink)
+export function isForbiddenImageHost(url?: string): boolean {
+  if (!url || typeof url !== 'string') return true;
+  const lower = url.toLowerCase().trim();
+  return (
+    lower.includes('gazetaesportiva.com') ||
+    lower.includes('placeholder') ||
+    lower.includes('data:image') ||
+    lower.includes('pixel') ||
+    lower.includes('1x1')
+  );
+}
+
+function isValidHttpImageUrl(url?: string): boolean {
+  if (!url || typeof url !== 'string') return false;
+  const trimmed = url.trim();
+  if (!trimmed.startsWith('http://') && !trimmed.startsWith('https://')) return false;
+  if (isForbiddenImageHost(trimmed)) return false;
+  return true;
+}
+
+// Extract only original source images from API or image records, discarding forbidden/broken hosts
 function extractOriginalImageUrl(item: any, imgRecord?: any): string | undefined {
+  const check = (candidate?: any): string | undefined => {
+    if (typeof candidate === 'string' && isValidHttpImageUrl(candidate)) {
+      return candidate.trim();
+    }
+    return undefined;
+  };
+
   // 1. Direct item properties
-  if (item?.imageUrl && typeof item.imageUrl === 'string' && item.imageUrl.startsWith('http')) {
-    return item.imageUrl;
-  }
-  if (item?.mediaUrl && typeof item.mediaUrl === 'string' && item.mediaUrl.startsWith('http')) {
-    return item.mediaUrl;
-  }
-  if (item?.url && typeof item.url === 'string' && item.url.startsWith('http') && /\.(jpe?g|png|webp|avif|gif)(\?.*)?$/i.test(item.url)) {
-    return item.url;
-  }
-  if (item?.enclosure?.url && typeof item.enclosure.url === 'string' && item.enclosure.url.startsWith('http')) {
-    return item.enclosure.url;
-  }
+  const direct =
+    check(item?.imageUrl) ||
+    check(item?.mediaUrl) ||
+    (item?.url && /\.(jpe?g|png|webp|avif|gif)(\?.*)?$/i.test(item.url) ? check(item.url) : undefined) ||
+    check(item?.enclosure?.url);
+  if (direct) return direct;
 
   // 2. Matching image record from /api/images/:id
   if (imgRecord) {
-    if (imgRecord.imageUrl && typeof imgRecord.imageUrl === 'string' && imgRecord.imageUrl.startsWith('http')) {
-      return imgRecord.imageUrl;
-    }
-    if (imgRecord.mediaUrl && typeof imgRecord.mediaUrl === 'string' && imgRecord.mediaUrl.startsWith('http')) {
-      return imgRecord.mediaUrl;
-    }
-    if (imgRecord.source_url && typeof imgRecord.source_url === 'string' && imgRecord.source_url.startsWith('http')) {
-      return imgRecord.source_url;
-    }
-    if (imgRecord.url && typeof imgRecord.url === 'string' && imgRecord.url.startsWith('http')) {
-      return imgRecord.url;
-    }
-    if (imgRecord.raw?.source_url && typeof imgRecord.raw.source_url === 'string' && imgRecord.raw.source_url.startsWith('http')) {
-      return imgRecord.raw.source_url;
-    }
-    if (imgRecord.raw?.guid?.rendered && typeof imgRecord.raw.guid.rendered === 'string' && imgRecord.raw.guid.rendered.startsWith('http')) {
-      return imgRecord.raw.guid.rendered;
-    }
-    if (imgRecord.link && typeof imgRecord.link === 'string' && /\.(jpe?g|png|webp|avif|gif)(\?.*)?$/i.test(imgRecord.link)) {
-      return imgRecord.link;
-    }
+    const fromRecord =
+      check(imgRecord.imageUrl) ||
+      check(imgRecord.mediaUrl) ||
+      check(imgRecord.source_url) ||
+      check(imgRecord.url) ||
+      check(imgRecord.raw?.source_url) ||
+      check(imgRecord.raw?.guid?.rendered) ||
+      (imgRecord.link && /\.(jpe?g|png|webp|avif|gif)(\?.*)?$/i.test(imgRecord.link) ? check(imgRecord.link) : undefined);
+    if (fromRecord) return fromRecord;
   }
 
   // 3. Scan embedded <img> tags in content or description
   const contentToScan = `${item?.content || ''} ${item?.description || ''} ${imgRecord?.content || ''} ${imgRecord?.description || ''}`;
-  const imgMatch = contentToScan.match(/<img[^>]+src=["']([^"']+)["']/i);
-  if (imgMatch && imgMatch[1] && imgMatch[1].startsWith('http')) {
-    return imgMatch[1];
+  const imgMatches = contentToScan.matchAll(/<img[^>]+src=["']([^"']+)["']/gi);
+  for (const match of imgMatches) {
+    const found = check(match[1]);
+    if (found) return found;
   }
 
   // 4. Raw media enclosures
-  if (item?.raw?.enclosure?.[0]?.$?.url) {
-    return item.raw.enclosure[0].$.url;
-  }
-  if (item?.raw?.['media:content']?.[0]?.$?.url) {
-    return item.raw['media:content'][0].$.url;
-  }
+  const rawEnc = check(item?.raw?.enclosure?.[0]?.$?.url) || check(item?.raw?.['media:content']?.[0]?.$?.url);
+  if (rawEnc) return rawEnc;
 
   return undefined;
 }
@@ -270,8 +277,14 @@ async function fetchFromUpstreamSource(source: NewsApiSourceItem): Promise<NewsI
 
     // If still missing, borrow from source original images pool so NO news item is left without an image
     if (!imageUrl && rawImages.length > 0) {
-      const poolImg = rawImages[idx % rawImages.length];
-      imageUrl = extractOriginalImageUrl(item, poolImg);
+      for (let p = 0; p < rawImages.length; p++) {
+        const poolImg = rawImages[(idx + p) % rawImages.length];
+        const cand = extractOriginalImageUrl(item, poolImg);
+        if (cand && !isForbiddenImageHost(cand)) {
+          imageUrl = cand;
+          break;
+        }
+      }
     }
     const cleanTitleText = decodeHtmlEntities(title);
     const pubDate = item.pubDate || new Date().toISOString();
@@ -279,7 +292,7 @@ async function fetchFromUpstreamSource(source: NewsApiSourceItem): Promise<NewsI
     const cleanSlug = slugify(cleanTitleText, fallbackId);
     const guid = cleanSlug || String(item.id || fallbackId);
 
-    let rawAuthor = String(item.author || 'Redação Portal News')
+    let rawAuthor = String(item.author || 'Portal News')
       .replace(/por\s+/gi, '')
       .replace(/\/\s*g1\b/gi, '')
       .replace(/,\s*g1\b/gi, '')
@@ -294,7 +307,7 @@ async function fetchFromUpstreamSource(source: NewsApiSourceItem): Promise<NewsI
       .trim();
 
     if (!rawAuthor || rawAuthor.length < 3 || /^(admin|redacao|g1)$/i.test(rawAuthor) || /^\d+$/.test(rawAuthor)) {
-      rawAuthor = 'Redação Portal News';
+      rawAuthor = 'Portal News';
     }
 
     sanitizedItems.push({
@@ -450,7 +463,7 @@ export async function getLiveNews(options: {
           'Balanço recente divulgado pelos órgãos reguladores aponta equilíbrio no mercado produtivo e nas projeções para o próximo trimestre.',
         contentHtml:
           'Balanço recente divulgado pelos órgãos reguladores aponta equilíbrio no mercado produtivo e nas projeções para o próximo trimestre. Especialistas analisam a conjuntura econômica e a sustentabilidade das operações de investimentos.',
-        author: 'Redação Portal News',
+        author: 'Portal News',
       },
     ];
   }

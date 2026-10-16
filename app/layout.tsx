@@ -3,6 +3,7 @@ import Script from 'next/script';
 import './globals.css';
 import { SITE_CONFIG, getBaseUrl } from '@/lib/site-config';
 import { generatePortalOrganizationSchema, generateWebSiteSchema } from '@/lib/seo';
+import { CookieConsentBanner } from '@/components/CookieConsentBanner';
 
 const currentDomain = getBaseUrl();
 
@@ -16,20 +17,19 @@ export const viewport: Viewport = {
 export const metadata: Metadata = {
   metadataBase: new URL(currentDomain),
   title: {
-    default: 'Portal News | Notícias e Cobertura Completa • Brasil',
+    default: 'Portal News | A informação que move o Brasil',
     template: '%s | Portal News',
   },
   description: SITE_CONFIG.description,
   applicationName: SITE_CONFIG.name,
-  authors: [{ name: 'Redação Portal News' }],
+  authors: [{ name: 'Portal News' }],
   generator: 'Next.js',
   keywords: [
     'Portal News',
     'Notícias Brasil',
-    'Cobertura Completa',
+    'Política',
     'Economia',
     'Justiça',
-    'Política',
     'Educação',
     'Esporte',
     'Tecnologia',
@@ -46,7 +46,7 @@ export const metadata: Metadata = {
   },
   manifest: '/manifest.webmanifest',
   openGraph: {
-    title: 'Portal News | Notícias e Cobertura Completa • Brasil',
+    title: 'Portal News | A informação que move o Brasil',
     description: SITE_CONFIG.description,
     url: currentDomain,
     siteName: SITE_CONFIG.name,
@@ -55,7 +55,7 @@ export const metadata: Metadata = {
         url: '/cover.png',
         width: 1200,
         height: 630,
-        alt: 'Portal News - Cobertura Jornalística Completa',
+        alt: 'Portal News - A informação que move o Brasil',
       },
     ],
     locale: 'pt_BR',
@@ -63,7 +63,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Portal News | Notícias e Cobertura Completa • Brasil',
+    title: 'Portal News | A informação que move o Brasil',
     description: SITE_CONFIG.description,
     images: ['/cover.png'],
   },
@@ -193,6 +193,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body suppressHydrationWarning className="bg-white dark:bg-zinc-950 text-slate-900 dark:text-zinc-100 transition-colors">
         {children}
+        <CookieConsentBanner />
       </body>
     </html>
   );

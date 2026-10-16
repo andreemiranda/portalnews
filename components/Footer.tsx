@@ -2,12 +2,12 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { Newspaper, ShieldCheck, Heart, Volume2, Globe, FileCode, ExternalLink, ArrowUp } from 'lucide-react';
+import { ShieldCheck, Heart, Volume2, Globe, FileCode, ExternalLink, ArrowUp, Phone, MapPin, Building, Mail } from 'lucide-react';
 import { AdSenseBanner } from './AdSenseBanner';
 import { SITE_CONFIG } from '@/lib/site-config';
 
 interface FooterProps {
-  setActiveCategory: (cat: string) => void;
+  setActiveCategory?: (cat: string) => void;
 }
 
 export const Footer: React.FC<FooterProps> = ({ setActiveCategory }) => {
@@ -33,10 +33,11 @@ export const Footer: React.FC<FooterProps> = ({ setActiveCategory }) => {
               <h3 className="text-base font-black text-white font-sans tracking-tight">
                 PORTAL <span className="text-red-500">NEWS</span>
               </h3>
-              <p className="text-[11px] text-zinc-500">Jornalismo e Cobertura Nacional Completa</p>
+              <p className="text-[11px] text-zinc-400 font-medium">{SITE_CONFIG.tagline}</p>
             </div>
           </div>
 
+          {/* Único botão Voltar ao Topo no rodapé (na parte superior do rodapé) */}
           <button
             id="back-to-top-button"
             onClick={scrollToTop}
@@ -49,66 +50,112 @@ export const Footer: React.FC<FooterProps> = ({ setActiveCategory }) => {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-8">
-          {/* Brand Info */}
+          {/* Brand Info & Dados Institucionais */}
           <div className="lg:col-span-4 space-y-4">
             <p className="text-xs leading-relaxed text-zinc-400 max-w-sm">
-              Informação ágil, verificação contínua e cobertura jornalística abrangente sobre economia,
-              justiça, educação, política, esportes, tecnologia e os estados brasileiros.
+              Cobertura jornalística independente, transparente e contínua sobre política, economia,
+              justiça, educação, esportes, tecnologia e os estados brasileiros.
             </p>
 
-            <div className="flex items-center gap-2 text-xs text-red-400 font-medium">
-              <Globe className="w-3.5 h-3.5" />
-              <span>Redação Central • Brasil</span>
+            <div className="p-3.5 rounded-xl bg-zinc-900/80 border border-zinc-800/80 space-y-2 text-xs">
+              <div className="flex items-center gap-2 text-zinc-300 font-semibold">
+                <Building className="w-3.5 h-3.5 text-red-500 shrink-0" />
+                <span>Responsável: {SITE_CONFIG.institutional.responsible}</span>
+              </div>
+              <div className="flex items-center gap-2 text-zinc-400">
+                <MapPin className="w-3.5 h-3.5 text-zinc-500 shrink-0" />
+                <span>Endereço: {SITE_CONFIG.institutional.address}</span>
+              </div>
+              <div className="flex items-center gap-2 text-zinc-400">
+                <Phone className="w-3.5 h-3.5 text-zinc-500 shrink-0" />
+                <span>Telefone: {SITE_CONFIG.institutional.phone}</span>
+              </div>
+              <div className="flex items-center gap-2 text-zinc-400">
+                <Mail className="w-3.5 h-3.5 text-zinc-500 shrink-0" />
+                <Link href="/contato" className="hover:text-red-400 transition underline underline-offset-2">
+                  Fale Conosco / Contato
+                </Link>
+              </div>
             </div>
           </div>
 
           {/* Categories Links */}
           <div className="lg:col-span-3 space-y-3">
-            <h4 className="text-xs font-extrabold uppercase text-zinc-200 tracking-wider">Editorias em Destaque</h4>
+            <h4 className="text-xs font-extrabold uppercase text-zinc-200 tracking-wider">Editorias</h4>
             <ul className="space-y-2 text-xs">
               {[
                 { id: 'all', name: 'Todas as Notícias' },
-                { id: 'Notícias Gerais', name: 'Notícias Gerais' },
+                { id: 'Política', name: 'Política' },
                 { id: 'Economia', name: 'Economia' },
                 { id: 'Justiça', name: 'Justiça' },
                 { id: 'Educação', name: 'Educação' },
+                { id: 'Saúde', name: 'Saúde' },
                 { id: 'Esporte', name: 'Esporte' },
                 { id: 'Tecnologia e Games', name: 'Tecnologia & Games' },
                 { id: 'Pará', name: 'Pará' },
                 { id: 'Tocantins', name: 'Tocantins' },
-                { id: 'Mundo', name: 'Mundo' },
               ].map((cat) => (
                 <li key={cat.id}>
-                  <button
-                    onClick={() => setActiveCategory(cat.id)}
-                    className="hover:text-red-400 transition"
-                  >
-                    • {cat.name}
-                  </button>
+                  {setActiveCategory ? (
+                    <button
+                      onClick={() => setActiveCategory(cat.id)}
+                      className="hover:text-red-400 transition cursor-pointer text-left"
+                    >
+                      • {cat.name}
+                    </button>
+                  ) : (
+                    <Link
+                      href={cat.id === 'all' ? '/' : `/?category=${encodeURIComponent(cat.id)}`}
+                      className="hover:text-red-400 transition block"
+                    >
+                      • {cat.name}
+                    </Link>
+                  )}
                 </li>
               ))}
             </ul>
           </div>
 
-          {/* Standards & Experience */}
+          {/* Políticas e Conformidade Google AdSense */}
           <div className="lg:col-span-2 space-y-3">
             <h4 className="text-xs font-extrabold uppercase text-zinc-200 tracking-wider">
-              Recursos do Leitor
+              Institucional &amp; Legal
             </h4>
-            <div className="space-y-2 text-xs text-zinc-400">
-              <p className="flex items-center gap-2">
-                <Volume2 className="w-3.5 h-3.5 text-red-400 shrink-0" />
-                <span>Leitura em Áudio Sintetizado</span>
-              </p>
-              <p className="flex items-center gap-2">
-                <ShieldCheck className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-                <span>Modo Escuro e Sem Anúncios Intrusivos</span>
-              </p>
-              <p className="flex items-center gap-2">
-                <Newspaper className="w-3.5 h-3.5 text-blue-400 shrink-0" />
-                <span>Feeds ao Vivo e Cobertura Contínua</span>
-              </p>
-            </div>
+            <ul className="space-y-2 text-xs">
+              <li>
+                <Link href="/privacidade" className="hover:text-red-400 transition block">
+                  • Política de Privacidade
+                </Link>
+              </li>
+              <li>
+                <Link href="/termos" className="hover:text-red-400 transition block">
+                  • Termos de Uso
+                </Link>
+              </li>
+              <li>
+                <Link href="/cookies" className="hover:text-red-400 transition block">
+                  • Política de Cookies
+                </Link>
+              </li>
+              <li>
+                <Link href="/contato" className="hover:text-red-400 transition block font-bold text-red-400">
+                  • Fale Conosco / Contato
+                </Link>
+              </li>
+              <li>
+                <button
+                  onClick={() => {
+                    if (typeof window !== 'undefined') {
+                      localStorage.removeItem('portal_cookie_consent');
+                      window.location.reload();
+                    }
+                  }}
+                  className="text-zinc-500 hover:text-zinc-300 transition text-[11px] pt-1 cursor-pointer block text-left"
+                >
+                  • Preferências de Cookies
+                </button>
+              </li>
+            </ul>
           </div>
 
           {/* Sitemaps Section */}
@@ -179,23 +226,18 @@ export const Footer: React.FC<FooterProps> = ({ setActiveCategory }) => {
 
         {/* Footer bottom bar */}
         <div className="mt-12 pt-6 border-t border-zinc-900 flex flex-col sm:flex-row items-center justify-between text-xs text-zinc-500 gap-4">
-          <p>© 2026 Portal News. Todos os direitos reservados.</p>
-          <div className="flex items-center gap-4 flex-wrap justify-center">
-            <a href="/sitemap.xml" target="_blank" rel="noopener noreferrer" className="hover:text-zinc-300 transition">
-              Sitemaps XML
-            </a>
+          <p>© {new Date().getFullYear()} Portal News. Todos os direitos reservados. {SITE_CONFIG.institutional.address}.</p>
+          <div className="flex items-center gap-4 flex-wrap justify-center text-[11px]">
+            <Link href="/privacidade" className="hover:text-zinc-300 transition">Privacidade</Link>
             <span>•</span>
-            <button
-              onClick={scrollToTop}
-              className="hover:text-red-400 transition font-medium flex items-center gap-1 cursor-pointer"
-            >
-              <span>Voltar ao topo</span>
-              <ArrowUp className="w-3 h-3" />
-            </button>
+            <Link href="/termos" className="hover:text-zinc-300 transition">Termos</Link>
+            <span>•</span>
+            <Link href="/cookies" className="hover:text-zinc-300 transition">Cookies</Link>
+            <span>•</span>
+            <Link href="/contato" className="hover:text-zinc-300 transition">Contato</Link>
           </div>
           <p className="flex items-center gap-1">
-            <span>Desenvolvido com excelência jornalística e tecnologia</span>
-            <Heart className="w-3.5 h-3.5 text-red-500 fill-current" />
+            <span>Portal News — Jornalismo e Informação</span>
           </p>
         </div>
       </div>

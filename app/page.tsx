@@ -293,21 +293,9 @@ export default function HomePage() {
         {/* Top Weather & Regional Highlights Grid */}
         <div className="grid grid-cols-1 md:grid-cols-12 gap-5 items-stretch">
           <div className="md:col-span-8 lg:col-span-9 flex flex-col justify-between p-6 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 shadow-sm">
-            <div className="flex items-center justify-between gap-3 mb-3">
-              <span className="text-xs font-black uppercase tracking-wider text-red-600 flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-red-600 inline-block animate-ping" />
-                Edição Nacional • Cobertura Contínua
-              </span>
-              <span className="text-xs text-slate-400 font-medium">
-                Cobertura Verificada • 24 Horas
-              </span>
-            </div>
             <h2 className="text-xl sm:text-2xl font-sans font-black tracking-tight text-slate-900 dark:text-zinc-50 leading-tight">
               Acompanhe as principais informações de economia, justiça, política e acontecimentos do Brasil
             </h2>
-            <p className="text-xs sm:text-sm text-slate-500 dark:text-zinc-400 mt-2">
-              Notícias apuradas diretamente das fontes oficiais, com filtros por editorias e leitura em áudio.
-            </p>
           </div>
 
           <div className="md:col-span-4 lg:col-span-3">
@@ -324,12 +312,8 @@ export default function HomePage() {
                 ? 'Todas as Notícias'
                 : activeCategory === 'favoritos'
                 ? 'Sua Lista de Salvos'
-                : `Editoria: ${activeCategory}`}
+                : activeCategory}
             </h2>
-
-            <span className="text-xs text-slate-500 font-extrabold bg-slate-200 dark:bg-zinc-800 px-3 py-1 rounded-full">
-              {filteredNews.length} matérias
-            </span>
 
             {lastUpdatedTime && (
               <span className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-200 dark:border-emerald-800 px-2.5 py-0.5 rounded-full flex items-center gap-1.5">

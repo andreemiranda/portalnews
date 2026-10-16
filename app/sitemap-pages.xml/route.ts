@@ -11,6 +11,10 @@ export async function GET() {
   const pages = [
     { path: '', changefreq: 'always', priority: '1.0' },
     { path: '/?category=all', changefreq: 'hourly', priority: '0.9' },
+    { path: '/privacidade', changefreq: 'monthly', priority: '0.7' },
+    { path: '/termos', changefreq: 'monthly', priority: '0.7' },
+    { path: '/cookies', changefreq: 'monthly', priority: '0.7' },
+    { path: '/contato', changefreq: 'monthly', priority: '0.8' },
     { path: '/?category=favoritos', changefreq: 'weekly', priority: '0.5' },
   ];
 

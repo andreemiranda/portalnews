@@ -183,7 +183,7 @@ export function generateNewsArticleSchema(item: NewsItem) {
     dateModified: pubDate,
     author: {
       '@type': 'Person',
-      name: item.author || 'Redação Portal News',
+      name: item.author || 'Portal News',
     },
     publisher: {
       '@type': 'NewsMediaOrganization',

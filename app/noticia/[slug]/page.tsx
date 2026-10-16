@@ -92,7 +92,7 @@ export default async function NoticiaPage({ params }: PageProps) {
             </Link>
           </div>
         </main>
-        <Footer setActiveCategory={() => {}} />
+        <Footer />
       </div>
     );
   }

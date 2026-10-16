@@ -1,6 +1,6 @@
 /**
  * Configurações Centrais do Portal News
- * Domínio, URLs canônicas, AdSense e Integrações
+ * Domínio, URLs canônicas, AdSense, Dados Institucionais e SMTP
  */
 
 export function getBaseUrl(): string {
@@ -8,11 +8,11 @@ export function getBaseUrl(): string {
     process.env.NEXT_PUBLIC_SITE_URL ||
     process.env.SITE_DOMAIN ||
     process.env.APP_URL ||
-    'https://ais-dev-qyzbaiotwmw74wkgcp56qo-771752383788.us-east1.run.app';
+    'https://portalnews-pi.vercel.app';
 
   let normalized = envUrl.trim();
   if (!normalized) {
-    normalized = 'https://portalnews.com.br';
+    normalized = 'https://portalnews-pi.vercel.app';
   }
   if (!/^https?:\/\//i.test(normalized)) {
     normalized = `https://${normalized}`;
@@ -23,9 +23,15 @@ export function getBaseUrl(): string {
 export const SITE_CONFIG = {
   name: 'Portal News',
   shortName: 'Portal News',
-  tagline: 'Jornalismo • Brasil e Cobertura Completa',
+  tagline: 'A informação que move o Brasil',
   description:
     'Portal de notícias com cobertura de política, economia, justiça, educação, esportes, tecnologia e notícias dos estados brasileiros.',
+  institutional: {
+    responsible: 'Portal News',
+    address: 'Brasília-DF',
+    phone: '(61) 9 9242-8022',
+    email: 'contato@portalnews.com.br',
+  },
   get domain(): string {
     return getBaseUrl();
   },
@@ -60,6 +66,14 @@ export const SITE_CONFIG = {
         process.env.VITE_GOOGLE_ADSENSE_SLOT_FOOTER ||
         '',
     },
+  },
+  smtp: {
+    host: process.env.SMTP_HOST || 'smtp.gmail.com',
+    port: parseInt(process.env.SMTP_PORT || '465', 10),
+    secure: process.env.SMTP_SECURE ? process.env.SMTP_SECURE === 'true' : true,
+    user: process.env.SMTP_USER || '',
+    pass: process.env.SMTP_PASS || '',
+    receiver: process.env.CONTACT_RECEIVER_EMAIL || process.env.SMTP_USER || 'contato@portalnews.com.br',
   },
   aiSummary: {
     endpoint: process.env.AI_SUMMARY_API_ENDPOINT || '',

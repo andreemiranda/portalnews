@@ -38,10 +38,7 @@ export default function NotFound() {
       <header className="border-b border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
         <div className="bg-zinc-950 text-zinc-300 text-xs py-1.5 px-4 sm:px-6">
           <div className="max-w-7xl mx-auto flex items-center justify-between">
-            <span className="flex items-center gap-1.5 font-semibold text-red-400">
-              <Compass className="w-3.5 h-3.5" />
-              Edição Nacional
-            </span>
+            <span className="font-semibold text-red-500">Portal News</span>
             <span className="text-zinc-400 text-[11px]">Erro 404 • Conteúdo Não Localizado</span>
           </div>
         </div>
@@ -104,7 +101,7 @@ export default function NotFound() {
             Página ou Notícia Não Encontrada
           </h2>
           <p className="text-sm sm:text-base text-slate-600 dark:text-zinc-400 max-w-lg mx-auto leading-relaxed">
-            O conteúdo que você tentou acessar não está disponível. Ele pode ter sido renomeado, removido pela fonte original ou o endereço digitado contém erros.
+            O conteúdo que você tentou acessar não está disponível. Ele pode ter sido renomeado, removido pela redação ou o endereço digitado contém erros.
           </p>
         </div>
 

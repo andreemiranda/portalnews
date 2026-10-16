@@ -99,11 +99,6 @@ export const Header: React.FC<HeaderProps> = ({
       <div className="bg-zinc-950 text-zinc-300 text-xs py-1.5 px-4 sm:px-6">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-2">
           <div className="flex items-center gap-4 flex-wrap justify-center sm:justify-start">
-            <span className="flex items-center gap-1.5 font-semibold text-red-400">
-              <Compass className="w-3.5 h-3.5" />
-              Edição Nacional
-            </span>
-            <span className="hidden sm:inline text-zinc-600">|</span>
             <span className="flex items-center gap-1.5 text-zinc-400" suppressHydrationWarning>
               <Clock className="w-3.5 h-3.5" />
               <span suppressHydrationWarning>{clientDate || 'Edição Brasil'}</span>

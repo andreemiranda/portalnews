@@ -17,6 +17,19 @@ interface OptimizedImageProps {
 
 const DEFAULT_FALLBACK = '/cover.png';
 
+// Detect hosts that block server-side image fetching (Cloudflare 403 / anti-bot)
+export function isForbiddenImageHost(url?: string): boolean {
+  if (!url || typeof url !== 'string') return true;
+  const lower = url.toLowerCase().trim();
+  return (
+    lower.includes('gazetaesportiva.com') ||
+    lower.includes('placeholder') ||
+    lower.includes('data:image') ||
+    lower.includes('pixel') ||
+    lower.includes('1x1')
+  );
+}
+
 export const OptimizedImage: React.FC<OptimizedImageProps> = ({
   src,
   alt,
@@ -37,14 +50,16 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
     setAttemptLevel(0);
   }
 
-  const rawSrc = (src && src.trim().length > 0) ? src.trim() : (fallbackSrc || DEFAULT_FALLBACK);
+  // Filter out any known forbidden host before passing to Next.js image optimizer
+  const safeSrc =
+    src && src.trim().length > 0 && !isForbiddenImageHost(src)
+      ? src.trim()
+      : (fallbackSrc || DEFAULT_FALLBACK);
 
   // Progressive resilience:
-  // attemptLevel 0: Standard Next.js image proxy
-  // attemptLevel 1: Direct unoptimized browser load (bypasses CORS/proxy failure)
-  // attemptLevel >= 2: Fallback to verified local portal cover asset
-  const isUnoptimized = attemptLevel === 1;
-  const finalSrc = attemptLevel >= 2 ? (fallbackSrc || DEFAULT_FALLBACK) : rawSrc;
+  // attemptLevel 0: Next.js image optimizer with safe URL
+  // attemptLevel >= 1: Verified local portal cover asset
+  const finalSrc = attemptLevel >= 1 ? (fallbackSrc || DEFAULT_FALLBACK) : safeSrc;
 
   const handleImageError = () => {
     setAttemptLevel((prev) => prev + 1);
@@ -61,7 +76,6 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
         priority={priority}
         sizes={sizes}
         referrerPolicy="no-referrer"
-        unoptimized={isUnoptimized}
         onError={handleImageError}
         className={`object-cover transition-all duration-700 ${className}`}
         itemProp="image"
