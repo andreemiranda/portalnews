@@ -589,18 +589,6 @@ export default function HomePage() {
         )}
       </main>
 
-      {/* Floating Subir ao Topo Button */}
-      {showScrollTop && (
-        <button
-          onClick={scrollToTop}
-          className="fixed bottom-6 right-6 z-40 p-3.5 rounded-full bg-red-600 hover:bg-red-700 text-white shadow-xl transition-all duration-300 hover:scale-110 flex items-center justify-center ring-4 ring-white/30 dark:ring-zinc-900/60 cursor-pointer"
-          title="Subir ao topo"
-          aria-label="Subir ao topo"
-        >
-          <ArrowUp className="w-5 h-5" />
-        </button>
-      )}
-
       {/* Footer */}
       <Footer setActiveCategory={setActiveCategory} />
     </div>

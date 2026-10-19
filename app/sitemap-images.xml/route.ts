@@ -26,8 +26,8 @@ function escapeXml(unsafe: string): string {
     });
 }
 
-export async function GET() {
-  const domain = getBaseUrl();
+export async function GET(req: Request) {
+  const domain = getBaseUrl(req);
   const now = new Date().toISOString();
 
   let items: any[] = [];

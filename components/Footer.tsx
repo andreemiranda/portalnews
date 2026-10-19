@@ -1,8 +1,8 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { ShieldCheck, Heart, Volume2, Globe, FileCode, ExternalLink, ArrowUp, Phone, MapPin, Building, Mail } from 'lucide-react';
+import { FileCode, ExternalLink, ArrowUp, Phone, MapPin, Building, Mail } from 'lucide-react';
 import { AdSenseBanner } from './AdSenseBanner';
 import { SITE_CONFIG } from '@/lib/site-config';
 
@@ -11,6 +11,18 @@ interface FooterProps {
 }
 
 export const Footer: React.FC<FooterProps> = ({ setActiveCategory }) => {
+  const [showScrollTop, setShowScrollTop] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (typeof window !== 'undefined') {
+        setShowScrollTop(window.scrollY > 350);
+      }
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
   const scrollToTop = () => {
     if (typeof window !== 'undefined') {
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -18,12 +30,12 @@ export const Footer: React.FC<FooterProps> = ({ setActiveCategory }) => {
   };
 
   return (
-    <footer className="bg-zinc-950 text-zinc-400 border-t border-zinc-800 mt-16">
+    <footer className="bg-zinc-950 text-zinc-400 border-t border-zinc-800 mt-16 relative">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-12">
         {/* Localized Footer AdSense Slot */}
         <AdSenseBanner slot={SITE_CONFIG.adsense.slots.footer} format="horizontal" />
 
-        {/* Top Header of Footer with "Subir ao topo" Button */}
+        {/* Top Header of Footer - Logo & Tagline */}
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pb-8 mb-8 border-b border-zinc-900">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 bg-red-600 rounded-xl flex items-center justify-center text-white font-extrabold text-lg shadow-sm">
@@ -36,17 +48,6 @@ export const Footer: React.FC<FooterProps> = ({ setActiveCategory }) => {
               <p className="text-[11px] text-zinc-400 font-medium">{SITE_CONFIG.tagline}</p>
             </div>
           </div>
-
-          {/* Único botão Voltar ao Topo no rodapé (na parte superior do rodapé) */}
-          <button
-            id="back-to-top-button"
-            onClick={scrollToTop}
-            className="group flex items-center gap-2 px-5 py-2.5 rounded-full bg-zinc-900 hover:bg-red-600 text-zinc-300 hover:text-white border border-zinc-800 hover:border-red-500 transition-all shadow-sm text-xs font-bold cursor-pointer"
-            title="Voltar ao início da página"
-          >
-            <span>Subir ao topo</span>
-            <ArrowUp className="w-4 h-4 group-hover:-translate-y-0.5 transition-transform text-red-500 group-hover:text-white" />
-          </button>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-8">
@@ -73,7 +74,7 @@ export const Footer: React.FC<FooterProps> = ({ setActiveCategory }) => {
               <div className="flex items-center gap-2 text-zinc-400">
                 <Mail className="w-3.5 h-3.5 text-zinc-500 shrink-0" />
                 <Link href="/contato" className="hover:text-red-400 transition underline underline-offset-2">
-                  Fale Conosco / Contato
+                  Contato
                 </Link>
               </div>
             </div>
@@ -116,7 +117,7 @@ export const Footer: React.FC<FooterProps> = ({ setActiveCategory }) => {
             </ul>
           </div>
 
-          {/* Políticas e Conformidade Google AdSense */}
+          {/* Políticas e Conformidade Institucional */}
           <div className="lg:col-span-2 space-y-3">
             <h4 className="text-xs font-extrabold uppercase text-zinc-200 tracking-wider">
               Institucional &amp; Legal
@@ -139,7 +140,7 @@ export const Footer: React.FC<FooterProps> = ({ setActiveCategory }) => {
               </li>
               <li>
                 <Link href="/contato" className="hover:text-red-400 transition block font-bold text-red-400">
-                  • Fale Conosco / Contato
+                  • Contato
                 </Link>
               </li>
               <li>
@@ -224,8 +225,8 @@ export const Footer: React.FC<FooterProps> = ({ setActiveCategory }) => {
           </div>
         </div>
 
-        {/* Footer bottom bar */}
-        <div className="mt-12 pt-6 border-t border-zinc-900 flex flex-col sm:flex-row items-center justify-between text-xs text-zinc-500 gap-4">
+        {/* Footer bottom bar com espaçamento lateral à direita para o botão redondo flutuante */}
+        <div className="mt-12 pt-6 border-t border-zinc-900 flex flex-col md:flex-row items-center justify-between text-xs text-zinc-500 gap-4 pr-0 sm:pr-20">
           <p>© {new Date().getFullYear()} Portal News. Todos os direitos reservados. {SITE_CONFIG.institutional.address}.</p>
           <div className="flex items-center gap-4 flex-wrap justify-center text-[11px]">
             <Link href="/privacidade" className="hover:text-zinc-300 transition">Privacidade</Link>
@@ -236,11 +237,24 @@ export const Footer: React.FC<FooterProps> = ({ setActiveCategory }) => {
             <span>•</span>
             <Link href="/contato" className="hover:text-zinc-300 transition">Contato</Link>
           </div>
-          <p className="flex items-center gap-1">
-            <span>Portal News — Jornalismo e Informação</span>
+          <p className="flex items-center gap-1 text-center md:text-left">
+            <span>Portal News - Jornalismo e Informação</span>
           </p>
         </div>
       </div>
+
+      {/* Botão Redondo Flutuante de Subir ao Topo */}
+      {showScrollTop && (
+        <button
+          id="floating-scroll-top-button"
+          onClick={scrollToTop}
+          className="fixed bottom-6 right-6 z-50 p-3.5 rounded-full bg-red-600 hover:bg-red-700 text-white shadow-2xl transition-all duration-300 hover:scale-110 flex items-center justify-center ring-4 ring-white/30 dark:ring-zinc-900/60 cursor-pointer"
+          title="Subir ao topo"
+          aria-label="Subir ao topo"
+        >
+          <ArrowUp className="w-5 h-5" />
+        </button>
+      )}
     </footer>
   );
 };

@@ -17,12 +17,23 @@ interface OptimizedImageProps {
 
 const DEFAULT_FALLBACK = '/cover.png';
 
-// Detect hosts that block server-side image fetching (Cloudflare 403 / anti-bot)
-export function isForbiddenImageHost(url?: string): boolean {
+/**
+ * Detecta fontes ou domínios que possuem bloqueio contra o proxy otimizador de imagens do Next.js
+ * (ex: proteção Cloudflare 403 / anti-scraping da Gazeta Esportiva).
+ * Para essas fontes, utiliza-se a incorporação direta (unoptimized: true) com link direto da imagem
+ * sem passar pelo servidor Next.js.
+ * Para as demais fontes normais (G1, CNN, Exame, etc.), mantém-se a otimização nativa do Next.js.
+ */
+export function hasNextImageOptimizationBlock(url?: string): boolean {
+  if (!url || typeof url !== 'string') return false;
+  const lower = url.toLowerCase().trim();
+  return lower.includes('gazetaesportiva.com');
+}
+
+export function isInvalidImageString(url?: string): boolean {
   if (!url || typeof url !== 'string') return true;
   const lower = url.toLowerCase().trim();
   return (
-    lower.includes('gazetaesportiva.com') ||
     lower.includes('placeholder') ||
     lower.includes('data:image') ||
     lower.includes('pixel') ||
@@ -41,28 +52,23 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
   sizes = '(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw',
   fallbackSrc = DEFAULT_FALLBACK,
 }) => {
-  const [attemptLevel, setAttemptLevel] = useState<number>(0);
+  const [hasError, setHasError] = useState<boolean>(false);
   const [prevSrc, setPrevSrc] = useState<string | undefined>(src);
 
-  // When src prop changes, reset error attempt level during render
   if (src !== prevSrc) {
     setPrevSrc(src);
-    setAttemptLevel(0);
+    setHasError(false);
   }
 
-  // Filter out any known forbidden host before passing to Next.js image optimizer
-  const safeSrc =
-    src && src.trim().length > 0 && !isForbiddenImageHost(src)
-      ? src.trim()
-      : (fallbackSrc || DEFAULT_FALLBACK);
+  const cleanSrc = src && src.trim().length > 0 && !isInvalidImageString(src) ? src.trim() : '';
+  const finalSrc = hasError || !cleanSrc ? (fallbackSrc || DEFAULT_FALLBACK) : cleanSrc;
 
-  // Progressive resilience:
-  // attemptLevel 0: Next.js image optimizer with safe URL
-  // attemptLevel >= 1: Verified local portal cover asset
-  const finalSrc = attemptLevel >= 1 ? (fallbackSrc || DEFAULT_FALLBACK) : safeSrc;
+  // Para fontes com bloqueio no otimizador Next.js: incorporação normal mediante link direto (unoptimized: true)
+  // Para fontes normais sem bloqueio: mantém o modo otimizado de incorporação de imagens do Next.js (unoptimized: false)
+  const isDirectLink = hasNextImageOptimizationBlock(cleanSrc);
 
   const handleImageError = () => {
-    setAttemptLevel((prev) => prev + 1);
+    setHasError(true);
   };
 
   return (
@@ -76,6 +82,7 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
         priority={priority}
         sizes={sizes}
         referrerPolicy="no-referrer"
+        unoptimized={isDirectLink}
         onError={handleImageError}
         className={`object-cover transition-all duration-700 ${className}`}
         itemProp="image"

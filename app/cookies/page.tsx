@@ -49,10 +49,11 @@ export default function CookiesPage() {
       {/* Conteúdo de Cookies */}
       <main className="max-w-4xl mx-auto px-4 sm:px-6 py-10 sm:py-14 space-y-10 flex-1">
         {/* Banner do Título */}
+        {/* Diretrizes de Transparência e Cookies - Google AdSense & LGPD mantidas no backend */}
         <div className="border-b border-slate-200 dark:border-zinc-800 pb-8 space-y-3">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-red-50 dark:bg-red-950/60 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-900 text-xs font-extrabold uppercase tracking-wider">
             <Cookie className="w-3.5 h-3.5" />
-            <span>Transparência Digital</span>
+            <span>Navegação e Transparência</span>
           </div>
           <h2 className="text-3xl sm:text-4xl font-black tracking-tight text-slate-900 dark:text-zinc-50 font-sans">
             Política de Cookies

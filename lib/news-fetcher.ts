@@ -4,6 +4,7 @@ import { NewsItem, NewsApiSourceItem } from '@/lib/types';
 import { cleanFullNewsText, cleanTitle, isForbiddenVideoPost, decodeHtmlEntities, removeTruncationMarkers } from '@/lib/sanitizer';
 import { ensureCompleteArticleText } from '@/lib/article-extractor';
 import { slugify } from '@/lib/slug';
+import { getEditorialSeedNews } from '@/lib/seed-news';
 
 interface CacheEntry {
   timestamp: number;
@@ -67,12 +68,11 @@ function formatTimeAgo(dateString?: string, rawTimeAgo?: string): string {
   return `${day}/${month}/${year}`;
 }
 
-// Hosts that block server-side requests (Cloudflare 403 / anti-hotlink)
+// Hosts that are fake or invalid image strings
 export function isForbiddenImageHost(url?: string): boolean {
   if (!url || typeof url !== 'string') return true;
   const lower = url.toLowerCase().trim();
   return (
-    lower.includes('gazetaesportiva.com') ||
     lower.includes('placeholder') ||
     lower.includes('data:image') ||
     lower.includes('pixel') ||
@@ -410,12 +410,14 @@ export async function getLiveNews(options: {
       const catPool = categoryImagePool.get(item.category);
       if (catPool && catPool.length > 0) {
         item.imageUrl = catPool[idx % catPool.length];
+        item.imageCaption = `Registro jornalístico • ${item.category} / Portal News`;
       } else if (globalImagePool.length > 0) {
         item.imageUrl = globalImagePool[idx % globalImagePool.length];
+        item.imageCaption = `Registro jornalístico • ${item.category} / Portal News`;
       } else {
-        item.imageUrl = '/cover.png';
+        item.imageUrl = undefined;
+        item.imageCaption = undefined;
       }
-      item.imageCaption = `Registro jornalístico • ${item.category} / Portal News`;
     }
   });
 
@@ -447,25 +449,15 @@ export async function getLiveNews(options: {
   });
 
   if (finalItems.length === 0) {
-    finalItems = [
-      {
-        id: 'destaque-1',
-        slug: slugify('Principais indicadores econômicos e balanço financeiro nacional apontam estabilidade'),
-        title: 'Principais indicadores econômicos e balanço financeiro nacional apontam estabilidade',
-        link: '#',
-        pubDate: new Date().toISOString(),
-        isoDate: new Date().toISOString(),
-        timeAgo: 'Agora mesmo',
-        category: 'Economia',
-        categoryId: 'Economia',
-        source: 'Portal News',
-        summary:
-          'Balanço recente divulgado pelos órgãos reguladores aponta equilíbrio no mercado produtivo e nas projeções para o próximo trimestre.',
-        contentHtml:
-          'Balanço recente divulgado pelos órgãos reguladores aponta equilíbrio no mercado produtivo e nas projeções para o próximo trimestre. Especialistas analisam a conjuntura econômica e a sustentabilidade das operações de investimentos.',
-        author: 'Portal News',
-      },
-    ];
+    const seeds = getEditorialSeedNews();
+    if (category && category !== 'all' && category !== 'favoritos') {
+      const filtered = seeds.filter(
+        (s) => s.category.toLowerCase().trim() === category.toLowerCase().trim()
+      );
+      finalItems = filtered.length > 0 ? filtered : seeds;
+    } else {
+      finalItems = seeds;
+    }
   }
 
   memoryCache[cacheKey] = {

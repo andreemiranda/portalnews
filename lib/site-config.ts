@@ -3,21 +3,45 @@
  * Domínio, URLs canônicas, AdSense, Dados Institucionais e SMTP
  */
 
-export function getBaseUrl(): string {
-  const envUrl =
-    process.env.NEXT_PUBLIC_SITE_URL ||
-    process.env.SITE_DOMAIN ||
-    process.env.APP_URL ||
-    'https://portalnews-pi.vercel.app';
+export function getBaseUrl(req?: Request): string {
+  // 1. Prioridade absoluta: variáveis configuradas pelo usuário
+  const userEnv =
+    (process.env.APP_URL && process.env.APP_URL.trim()) ||
+    (process.env.SITE_DOMAIN && process.env.SITE_DOMAIN.trim()) ||
+    (process.env.NEXT_PUBLIC_SITE_URL && process.env.NEXT_PUBLIC_SITE_URL.trim());
 
-  let normalized = envUrl.trim();
-  if (!normalized) {
-    normalized = 'https://portalnews-pi.vercel.app';
+  if (userEnv) {
+    let normalized = userEnv.trim();
+    if (!/^https?:\/\//i.test(normalized)) {
+      normalized = `https://${normalized}`;
+    }
+    return normalized.replace(/\/+$/, '');
   }
-  if (!/^https?:\/\//i.test(normalized)) {
-    normalized = `https://${normalized}`;
+
+  // 2. Resolução dinâmica via cabeçalhos HTTP da requisição (Vercel / Proxy / Servidor)
+  if (req && typeof req.headers?.get === 'function') {
+    const host = req.headers.get('x-forwarded-host') || req.headers.get('host');
+    const proto = req.headers.get('x-forwarded-proto') || 'https';
+    if (host && !host.includes('localhost') && !host.includes('127.0.0.1')) {
+      return `${proto}://${host}`.replace(/\/+$/, '');
+    }
   }
-  return normalized.replace(/\/+$/, '');
+
+  // 3. Resolução automática das variáveis de produção nativas da Vercel
+  if (process.env.VERCEL_PROJECT_PRODUCTION_URL) {
+    return `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL.trim()}`.replace(/\/+$/, '');
+  }
+  if (process.env.VERCEL_URL) {
+    return `https://${process.env.VERCEL_URL.trim()}`.replace(/\/+$/, '');
+  }
+
+  // 4. Se executado no navegador do leitor
+  if (typeof window !== 'undefined' && window.location?.origin) {
+    return window.location.origin.replace(/\/+$/, '');
+  }
+
+  // 5. Fallback canônico
+  return 'https://portalnews.com.br';
 }
 
 export const SITE_CONFIG = {
@@ -70,7 +94,7 @@ export const SITE_CONFIG = {
   smtp: {
     host: process.env.SMTP_HOST || 'smtp.gmail.com',
     port: parseInt(process.env.SMTP_PORT || '465', 10),
-    secure: process.env.SMTP_SECURE ? process.env.SMTP_SECURE === 'true' : true,
+    secure: process.env.SMTP_SECURE === 'true' || (process.env.SMTP_PORT || '465') === '465',
     user: process.env.SMTP_USER || '',
     pass: process.env.SMTP_PASS || '',
     receiver: process.env.CONTACT_RECEIVER_EMAIL || process.env.SMTP_USER || 'contato@portalnews.com.br',
@@ -78,6 +102,6 @@ export const SITE_CONFIG = {
   aiSummary: {
     endpoint: process.env.AI_SUMMARY_API_ENDPOINT || '',
     apiKey: process.env.AI_SUMMARY_API_KEY || '',
-    model: process.env.AI_SUMMARY_MODEL || '',
+    model: process.env.AI_SUMMARY_MODEL || 'gpt-4o-mini',
   },
 };

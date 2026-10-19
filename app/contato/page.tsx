@@ -132,7 +132,7 @@ export default function ContatoPage() {
             <span>Atendimento ao Leitor</span>
           </div>
           <h2 className="text-3xl sm:text-4xl font-black tracking-tight text-slate-900 dark:text-zinc-50 font-sans">
-            Fale Conosco
+            Contato
           </h2>
           <p className="text-sm text-slate-600 dark:text-zinc-400 max-w-2xl leading-relaxed">
             Envie sua mensagem, sugestão de pauta, esclarecimento ou correção editorial. Todas as comunicações recebem um número de protocolo oficial de 13 dígitos para controle e rastreabilidade.
@@ -310,7 +310,7 @@ export default function ContatoPage() {
               >
                 <option value="Sugestão de Pauta">Sugestão de Pauta / Reportagem</option>
                 <option value="Correção Editorial">Correção ou Atualização de Notícia</option>
-                <option value="Comercial e Anúncios">Comercial, Parcerias e Google AdSense</option>
+                <option value="Comercial e Anúncios">Comercial e Parcerias</option>
                 <option value="Privacidade e Dados">Privacidade e Dados Pessoais (LGPD)</option>
                 <option value="Elogio ou Crítica">Elogio, Crítica ou Dúvida Geral</option>
                 <option value="Outro">Outro Assunto</option>

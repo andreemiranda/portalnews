@@ -4,8 +4,8 @@ import { getSeoCacheHeaders } from '@/lib/seo';
 
 export const dynamic = 'force-dynamic';
 
-export async function GET() {
-  const domain = getBaseUrl();
+export async function GET(req: Request) {
+  const domain = getBaseUrl(req);
   const now = new Date().toISOString();
 
   const pages = [
