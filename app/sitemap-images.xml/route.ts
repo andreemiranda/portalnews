@@ -3,6 +3,7 @@ import { getBaseUrl } from '@/lib/site-config';
 import { getLiveNews, isForbiddenImageHost } from '@/lib/news-fetcher';
 import { slugify } from '@/lib/slug';
 import { getSeoCacheHeaders } from '@/lib/seo';
+import { isHumanBrowserRequest, renderModernSitemapHtml, SitemapEntry } from '@/lib/sitemap-viewer';
 
 export const dynamic = 'force-dynamic';
 
@@ -42,8 +43,47 @@ export async function GET(req: Request) {
     (item) => item.imageUrl && item.imageUrl.startsWith('http') && !isForbiddenImageHost(item.imageUrl)
   );
 
+  const entries: SitemapEntry[] = itemsWithImages.map((item) => {
+    let safeIsoDate: string;
+    try {
+      safeIsoDate = new Date(item.isoDate || item.pubDate || now).toISOString();
+    } catch {
+      safeIsoDate = now;
+    }
+    const articleSlug = item.slug || slugify(item.title, item.id);
+    const articleUrl = `${domain}/noticia/${encodeURIComponent(articleSlug)}`;
+
+    return {
+      loc: articleUrl,
+      lastmod: safeIsoDate,
+      changefreq: 'hourly',
+      priority: '0.8',
+      title: item.title,
+      image: item.imageUrl,
+    };
+  });
+
+  // Visualizador moderno HTML se acessado por humano no navegador
+  if (isHumanBrowserRequest(req)) {
+    const html = renderModernSitemapHtml({
+      title: 'Mapa de Imagens & Mídias',
+      subtitle: 'Registros fotográficos e imagens originais das reportagens indexadas',
+      currentPath: '/sitemap-images.xml',
+      domain,
+      entries,
+      type: 'images',
+    });
+
+    return new NextResponse(html, {
+      headers: {
+        'Content-Type': 'text/html; charset=utf-8',
+        ...getSeoCacheHeaders(1800, 3600),
+      },
+    });
+  }
+
+  // XML puro para indexadores (sem XSLT)
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
-<?xml-stylesheet type="text/xsl" href="/sitemap.xsl"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
 ${itemsWithImages
   .map((item) => {

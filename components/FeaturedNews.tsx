@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { NewsItem } from '@/lib/types';
 import { Clock, Bookmark, ExternalLink, Volume2, ArrowRight, TrendingUp, Landmark } from 'lucide-react';
 import { OptimizedImage } from './OptimizedImage';
-import { slugify } from '@/lib/slug';
+import { slugify, categorySlugify } from '@/lib/slug';
 
 interface FeaturedNewsProps {
   item: NewsItem;
@@ -58,9 +58,13 @@ export const FeaturedNews: React.FC<FeaturedNewsProps> = ({
           {/* Bento Pill Badges */}
           <div className="absolute top-5 left-5 right-5 flex items-center justify-between gap-2 z-10">
             <div className="flex items-center gap-2">
-              <span className="bg-red-600 text-white text-xs font-black uppercase tracking-widest px-3.5 py-1.5 rounded-full shadow-md">
+              <Link
+                href={`/categoria/${categorySlugify(item.category)}`}
+                onClick={(e) => e.stopPropagation()}
+                className="bg-red-600 hover:bg-red-700 text-white text-xs font-black uppercase tracking-widest px-3.5 py-1.5 rounded-full shadow-md transition"
+              >
                 {item.category}
-              </span>
+              </Link>
               <span className="bg-zinc-900/80 backdrop-blur-md text-amber-300 text-xs font-bold px-3 py-1.5 rounded-full border border-amber-500/30 flex items-center gap-1.5 shadow-sm">
                 <TrendingUp className="w-3.5 h-3.5 text-amber-400" /> Destaque Principal
               </span>

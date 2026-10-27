@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { useRouter } from 'next/navigation';
+import { categorySlugify } from '@/lib/slug';
 import {
   Globe,
   TrendingUp,
@@ -61,7 +62,7 @@ export const CategoryTabs: React.FC<CategoryTabsProps> = ({
     if (setActiveCategory) {
       setActiveCategory(catId);
     } else {
-      router.push(catId === 'all' ? '/' : `/?category=${encodeURIComponent(catId)}`);
+      router.push(catId === 'all' ? '/' : `/categoria/${categorySlugify(catId)}`);
     }
   };
 

@@ -48,3 +48,23 @@ export function slugify(text: string, fallbackId?: string): string {
 
   return slug;
 }
+
+/**
+ * Gera slugs estritamente limpos para categorias:
+ * Sem acentos (a, e, i, o, u), sem "ç" (trocado por "c"), sem "&" (trocado por "e")
+ * e apenas letras minúsculas a-z, 0-9 e hífens.
+ */
+export function categorySlugify(catName: string): string {
+  if (!catName || catName === 'all') return 'todas';
+  let clean = catName
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/ç/g, 'c')
+    .replace(/&/g, 'e');
+
+  clean = clean.replace(/[^a-z0-9\s-]/g, ' ');
+  clean = clean.replace(/[\s-]+/g, '-');
+  clean = clean.replace(/^-+|-+$/g, '');
+  return clean || 'geral';
+}

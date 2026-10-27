@@ -18,17 +18,17 @@ import {
 
 const NOT_FOUND_CATEGORIES = [
   { id: 'all', name: 'Todas as Notícias', href: '/', icon: Home },
-  { id: 'Pará', name: 'Pará', href: '/?category=Par%C3%A1', icon: MapPin },
-  { id: 'Notícias Gerais', name: 'Notícias Gerais', href: '/?category=Not%C3%ADcias%20Gerais', icon: Newspaper },
-  { id: 'Economia', name: 'Economia', href: '/?category=Economia', icon: TrendingUp },
-  { id: 'Justiça', name: 'Justiça', href: '/?category=Justi%C3%A7a', icon: Scale },
-  { id: 'Tocantins', name: 'Tocantins', href: '/?category=Tocantins', icon: MapPin },
-  { id: 'Educação', name: 'Educação', href: '/?category=Educa%C3%A7%C3%A3o', icon: GraduationCap },
-  { id: 'Esporte', name: 'Esporte', href: '/?category=Esporte', icon: Trophy },
-  { id: 'Tecnologia e Games', name: 'Tecnologia & Games', href: '/?category=Tecnologia%20e%20Games', icon: Cpu },
-  { id: 'Goiás', name: 'Goiás', href: '/?category=Goi%C3%A1s', icon: MapPin },
-  { id: 'Santa Catarina', name: 'Santa Catarina', href: '/?category=Santa%20Catarina', icon: MapPin },
-  { id: 'Mundo', name: 'Mundo', href: '/?category=Mundo', icon: Globe },
+  { id: 'Pará', name: 'Pará', href: '/categoria/para', icon: MapPin },
+  { id: 'Notícias Gerais', name: 'Notícias Gerais', href: '/categoria/noticias-gerais', icon: Newspaper },
+  { id: 'Economia', name: 'Economia', href: '/categoria/economia', icon: TrendingUp },
+  { id: 'Justiça', name: 'Justiça', href: '/categoria/justica', icon: Scale },
+  { id: 'Tocantins', name: 'Tocantins', href: '/categoria/tocantins', icon: MapPin },
+  { id: 'Educação', name: 'Educação', href: '/categoria/educacao', icon: GraduationCap },
+  { id: 'Esporte', name: 'Esporte', href: '/categoria/esporte', icon: Trophy },
+  { id: 'Tecnologia e Games', name: 'Tecnologia & Games', href: '/categoria/tecnologia-e-games', icon: Cpu },
+  { id: 'Goiás', name: 'Goiás', href: '/categoria/goias', icon: MapPin },
+  { id: 'Santa Catarina', name: 'Santa Catarina', href: '/categoria/santa-catarina', icon: MapPin },
+  { id: 'Mundo', name: 'Mundo', href: '/categoria/mundo', icon: Globe },
 ];
 
 export default function NotFound() {

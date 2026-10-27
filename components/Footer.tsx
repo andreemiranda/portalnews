@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { FileCode, ExternalLink, ArrowUp, Phone, MapPin, Building, Mail } from 'lucide-react';
 import { AdSenseBanner } from './AdSenseBanner';
 import { SITE_CONFIG } from '@/lib/site-config';
+import { categorySlugify } from '@/lib/slug';
 
 interface FooterProps {
   setActiveCategory?: (cat: string) => void;
@@ -106,7 +107,7 @@ export const Footer: React.FC<FooterProps> = ({ setActiveCategory }) => {
                     </button>
                   ) : (
                     <Link
-                      href={cat.id === 'all' ? '/' : `/?category=${encodeURIComponent(cat.id)}`}
+                      href={cat.id === 'all' ? '/' : `/categoria/${categorySlugify(cat.id)}`}
                       className="hover:text-red-400 transition block"
                     >
                       • {cat.name}
@@ -123,6 +124,26 @@ export const Footer: React.FC<FooterProps> = ({ setActiveCategory }) => {
               Institucional &amp; Legal
             </h4>
             <ul className="space-y-2 text-xs">
+              <li>
+                <Link href="/pagina" className="hover:text-red-400 transition block">
+                  • Páginas Institucionais
+                </Link>
+              </li>
+              <li>
+                <Link href="/categoria" className="hover:text-red-400 transition block">
+                  • Todas as Editorias
+                </Link>
+              </li>
+              <li>
+                <Link href="/videos" className="hover:text-red-400 transition block">
+                  • TV &amp; Vídeos
+                </Link>
+              </li>
+              <li>
+                <Link href="/noticia" className="hover:text-red-400 transition block">
+                  • Sala de Imprensa
+                </Link>
+              </li>
               <li>
                 <Link href="/privacidade" className="hover:text-red-400 transition block">
                   • Política de Privacidade
@@ -159,11 +180,11 @@ export const Footer: React.FC<FooterProps> = ({ setActiveCategory }) => {
             </ul>
           </div>
 
-          {/* Sitemaps Section */}
+          {/* Sitemaps & Monitoramento */}
           <div className="lg:col-span-3 space-y-3">
             <h4 className="text-xs font-extrabold uppercase text-zinc-200 tracking-wider flex items-center gap-1.5">
               <FileCode className="w-3.5 h-3.5 text-red-400" />
-              <span>Sitemaps &amp; Indexação</span>
+              <span>Sitemaps &amp; Sincronização</span>
             </h4>
             <ul className="space-y-2 text-xs">
               <li>
@@ -218,6 +239,20 @@ export const Footer: React.FC<FooterProps> = ({ setActiveCategory }) => {
                   className="hover:text-red-400 transition flex items-center justify-between group"
                 >
                   <span>• Sitemap de Páginas</span>
+                  <ExternalLink className="w-3 h-3 opacity-50 group-hover:opacity-100" />
+                </a>
+              </li>
+              <li className="pt-2 border-t border-zinc-900">
+                <a
+                  href="/api/sync"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-emerald-400 text-zinc-400 transition flex items-center justify-between group font-semibold"
+                >
+                  <span className="flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-emerald-400 inline-block animate-pulse" />
+                    Status da Conexão API
+                  </span>
                   <ExternalLink className="w-3 h-3 opacity-50 group-hover:opacity-100" />
                 </a>
               </li>

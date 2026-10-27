@@ -9,7 +9,7 @@ import { generateNewsArticleSchema } from '@/lib/seo';
 import { Footer } from '@/components/Footer';
 import { ArrowLeft, Newspaper } from 'lucide-react';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 60;
 
 interface PageProps {
   params: Promise<{ slug: string }>;

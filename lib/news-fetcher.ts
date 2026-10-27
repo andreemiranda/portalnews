@@ -1,4 +1,4 @@
-import { ALL_NEWS_SOURCES, getSourcesByCategory, getSourceById } from '@/lib/sources';
+import { ALL_NEWS_SOURCES, getSourcesByCategory, getSourceById, normalizeCategoryText } from '@/lib/sources';
 import { NEWS_API_CONFIG } from '@/lib/api-config';
 import { NewsItem, NewsApiSourceItem } from '@/lib/types';
 import { cleanFullNewsText, cleanTitle, isForbiddenVideoPost, decodeHtmlEntities, removeTruncationMarkers } from '@/lib/sanitizer';
@@ -12,25 +12,35 @@ interface CacheEntry {
 }
 
 const memoryCache: Record<string, CacheEntry> = {};
-const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes high-speed cache for instant article opening
+export const CACHE_TTL_MS = 60 * 1000; // 60 segundos ISR contínuo com a API REST
+
+export function clearNewsCache(): void {
+  Object.keys(memoryCache).forEach((key) => {
+    delete memoryCache[key];
+  });
+  itemIndexMap.clear();
+}
 
 export const DEFAULT_ALL_SOURCE_IDS = [
-  '832514384744418', // Pará
-  '119319283249741', // Notícias Gerais
-  '432221191486213', // Notícias Gerais
-  '859131619791157', // Economia
-  '411718493791472', // Economia
-  '119282349536522', // Justiça
-  '382992878388555', // Justiça
-  '893766336492326', // Educação
-  '331649958919499', // Esporte
-  '158311376392135', // Tecnologia e Games
-  '383841537673882', // Tocantins
-  '699842191757118', // Goiás
-  '363855955883429', // Santa Catarina
-  '499199511484742', // Paraná
-  '477372321386414', // Mundo
-  '914761953262293', // Finanças
+  '8281449136684', // Política / Notícias Gerais
+  '3386542816798', // Economia
+  '4524183818294', // Economia
+  '2429537983919', // Esporte
+  '9124882157745', // Esporte
+  '9482399189391', // Justiça
+  '8132269214748', // Justiça
+  '6424291362274', // Educação
+  '5498139197391', // Educação
+  '4415826156744', // Tecnologia e Games
+  '9329418888697', // Pará
+  '6571187291942', // Tocantins
+  '8346116142997', // Goiás / Saúde
+  '1492834928862', // Santa Catarina
+  '2431124818641', // Mundo
+  '8833539123215', // Pop & Arte / Cultura
+  '1144428532544', // Notícias Gerais
+  '9886348421411', // Notícias Gerais / Saúde
+  '3347141892497', // Paraná
 ];
 
 function formatTimeAgo(dateString?: string, rawTimeAgo?: string): string {
@@ -136,14 +146,19 @@ function extractOriginalImageUrl(item: any, imgRecord?: any): string | undefined
 async function fetchWithFallback(primaryUrl: string, fallbackUrl: string): Promise<any> {
   const fetchWithTimeout = async (url: string) => {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 6500);
+    const timeoutId = setTimeout(() => controller.abort(), 4000);
     try {
+      const headers: Record<string, string> = {
+        Accept: 'application/json',
+      };
+      if (NEWS_API_CONFIG.apiKey) {
+        headers['Authorization'] = `Bearer ${NEWS_API_CONFIG.apiKey}`;
+        headers['x-api-key'] = NEWS_API_CONFIG.apiKey;
+      }
       const res = await fetch(url, {
-        headers: {
-          'x-api-key': NEWS_API_CONFIG.apiKey,
-          Accept: 'application/json',
-        },
+        headers,
         signal: controller.signal,
+        next: { revalidate: 60, tags: ['news', 'posts'] },
       });
       clearTimeout(timeoutId);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -177,8 +192,15 @@ async function fetchFromUpstreamSource(source: NewsApiSourceItem): Promise<NewsI
     fetchWithFallback(imgPrimary, imgFallback),
   ]);
 
-  const rawItems = newsResult.status === 'fulfilled' && Array.isArray(newsResult.value) ? newsResult.value : [];
-  const rawImages = imagesResult.status === 'fulfilled' && Array.isArray(imagesResult.value) ? imagesResult.value : [];
+  const newsVal = newsResult.status === 'fulfilled' ? newsResult.value : null;
+  const rawItems: any[] = Array.isArray(newsVal)
+    ? newsVal
+    : (Array.isArray(newsVal?.items) ? newsVal.items : (Array.isArray(newsVal?.data) ? newsVal.data : []));
+
+  const imgVal = imagesResult.status === 'fulfilled' ? imagesResult.value : null;
+  const rawImages: any[] = Array.isArray(imgVal)
+    ? imgVal
+    : (Array.isArray(imgVal?.items) ? imgVal.items : (Array.isArray(imgVal?.data) ? imgVal.data : []));
 
   if (rawItems.length === 0) return [];
 
@@ -310,6 +332,18 @@ async function fetchFromUpstreamSource(source: NewsApiSourceItem): Promise<NewsI
       rawAuthor = 'Portal News';
     }
 
+    // Mapeamento de categoria editorial final
+    let itemCategory = source.category;
+    if (source.id === '8281449136684') {
+      itemCategory = 'Política';
+    } else if (source.category === 'Palmeiras' || source.category === 'Autoesporte') {
+      itemCategory = 'Esporte';
+    } else if (source.category === 'Finanças') {
+      itemCategory = 'Economia';
+    } else if (source.category === 'Pop & Arte') {
+      itemCategory = 'Cultura';
+    }
+
     sanitizedItems.push({
       id: String(guid),
       slug: cleanSlug,
@@ -318,13 +352,14 @@ async function fetchFromUpstreamSource(source: NewsApiSourceItem): Promise<NewsI
       pubDate,
       isoDate: pubDate,
       timeAgo: formatTimeAgo(pubDate, item.timeAgo),
-      category: source.category,
-      categoryId: source.category,
+      category: itemCategory,
+      categoryId: itemCategory,
+      originalCategory: source.category,
       source: 'Portal News',
       summary: decodeHtmlEntities(cleanSummaryText),
       contentHtml: decodeHtmlEntities(cleanFullContent),
       imageUrl,
-      imageCaption: imageUrl ? `Registro jornalístico editorial • ${source.category}` : undefined,
+      imageCaption: imageUrl ? `Registro jornalístico editorial • ${itemCategory}` : undefined,
       author: decodeHtmlEntities(rawAuthor),
     });
   }
@@ -451,9 +486,11 @@ export async function getLiveNews(options: {
   if (finalItems.length === 0) {
     const seeds = getEditorialSeedNews();
     if (category && category !== 'all' && category !== 'favoritos') {
-      const filtered = seeds.filter(
-        (s) => s.category.toLowerCase().trim() === category.toLowerCase().trim()
-      );
+      const norm = normalizeCategoryText(category);
+      const filtered = seeds.filter((s) => {
+        const sNorm = normalizeCategoryText(s.category);
+        return sNorm.includes(norm) || norm.includes(sNorm);
+      });
       finalItems = filtered.length > 0 ? filtered : seeds;
     } else {
       finalItems = seeds;

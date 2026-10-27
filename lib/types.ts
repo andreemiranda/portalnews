@@ -14,6 +14,7 @@ export interface NewsItem {
   imageUrl?: string;
   imageCaption?: string;
   author?: string;
+  originalCategory?: string;
   isBookmarked?: boolean;
 }
 
@@ -28,6 +29,7 @@ export interface FeedSource {
 export interface CategoryInfo {
   id: string;
   name: string;
+  slug?: string;
   count?: number;
   highlight?: boolean;
   group?: 'nacional' | 'regiao' | 'tema' | 'especial';

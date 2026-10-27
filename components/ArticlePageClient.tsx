@@ -12,7 +12,7 @@ import { BreakingTicker } from './BreakingTicker';
 import { CategoryTabs } from './CategoryTabs';
 import { Footer } from './Footer';
 import { SITE_CONFIG } from '@/lib/site-config';
-import { slugify } from '@/lib/slug';
+import { slugify, categorySlugify } from '@/lib/slug';
 import { removeTruncationMarkers } from '@/lib/sanitizer';
 import {
   applyFontSize,
@@ -386,7 +386,7 @@ export const ArticlePageClient: React.FC<ArticlePageClientProps> = ({
       {/* Categories Menu - Fixed and inline without carousel */}
       <CategoryTabs
         activeCategory={item.category}
-        setActiveCategory={(cat) => router.push(cat === 'all' ? '/' : `/?category=${encodeURIComponent(cat)}`)}
+        setActiveCategory={(cat) => router.push(cat === 'all' ? '/' : `/categoria/${categorySlugify(cat)}`)}
         counts={{ [item.category]: 1 }}
       />
 
@@ -404,7 +404,7 @@ export const ArticlePageClient: React.FC<ArticlePageClientProps> = ({
 
           <div className="flex items-center gap-2 text-xs font-semibold text-slate-400">
             <Link
-              href={`/?category=${encodeURIComponent(item.category)}`}
+              href={`/categoria/${categorySlugify(item.category)}`}
               className="px-2.5 py-0.5 rounded-full bg-red-50 dark:bg-red-950/60 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-900 hover:bg-red-600 hover:text-white transition uppercase font-extrabold text-[10px] tracking-wider"
             >
               {item.category}

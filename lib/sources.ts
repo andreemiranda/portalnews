@@ -1,687 +1,822 @@
-import { NewsApiSourceItem, CategoryInfo } from './types';
+import { NewsApiSourceItem, CategoryInfo } from "./types";
+import { categorySlugify } from "./slug";
+
+export { categorySlugify };
 
 export const ALL_NEWS_SOURCES: NewsApiSourceItem[] = [
   {
-    id: '383841537673882',
-    endpoint: '/api/news/383841537673882',
-    category: 'Tocantins',
-    site: 'clebertoledo.com.br',
-    type: 'wp-api',
-    name: 'Cleber Toledo (Coluna do CT)',
-  },
-  {
-    id: '893766336492326',
-    endpoint: '/api/news/893766336492326',
-    category: 'Educação',
-    site: 'infoeducacao.com.br',
-    type: 'wp-api',
-    name: 'Info Educação',
-  },
-  {
-    id: '119282349536522',
-    endpoint: '/api/news/119282349536522',
-    category: 'Justiça',
-    site: 'nacaojuridica.com.br',
-    type: 'wp-api',
-    name: 'Nação Jurídica',
-  },
-  {
-    id: '138781293968447',
-    endpoint: '/api/news/138781293968447',
-    category: 'Tocantins',
-    site: 'atitudeto.com.br',
-    type: 'wp-api',
-    name: 'Portal Atitude TO',
-  },
-  {
-    id: '912241216478934',
-    endpoint: '/api/news/912241216478934',
-    category: 'Tocantins',
-    site: 'pmwnoticias.com.br',
-    type: 'wp-api',
-    name: 'PMW Notícias',
-  },
-  {
-    id: '119319283249741',
-    endpoint: '/api/news/119319283249741',
-    category: 'Notícias Gerais',
-    site: 'admin.cnnbrasil.com.br',
-    type: 'wp-api',
-    name: 'CNN Brasil Feed',
-  },
-  {
-    id: '673832516549963',
-    endpoint: '/api/news/673832516549963',
-    category: 'Tocantins',
-    site: 'gazetadocerrado.com.br',
-    type: 'wp-api',
-    name: 'Gazeta do Cerrado',
-  },
-  {
-    id: '859131619791157',
-    endpoint: '/api/news/859131619791157',
-    category: 'Economia',
-    site: 'minhaseconomias.com.br',
-    type: 'wp-api',
-    name: 'Minhas Economias',
-  },
-  {
-    id: '331649958919499',
-    endpoint: '/api/news/331649958919499',
-    category: 'Esporte',
-    site: 'esportenewsmundo.com.br',
-    type: 'wp-api',
-    name: 'Esporte News Mundo',
-  },
-  {
-    id: '263228425877841',
-    endpoint: '/api/news/263228425877841',
-    category: 'Notícias Gerais',
-    site: 'jornalibia.com.br',
-    type: 'wp-api',
-    name: 'Jornal Ibiá',
-  },
-  {
-    id: '914761953262293',
-    endpoint: '/api/news/914761953262293',
-    category: 'Finanças',
-    site: 'contabeis.com.br',
-    type: 'wp-api',
-    name: 'Portal Contábeis & Finanças',
-  },
-  {
-    id: '484292183833791',
-    endpoint: '/api/news/484292183833791',
-    category: 'Palmeiras',
-    site: 'nossoforex.com.br',
-    type: 'wp-api',
-    name: 'Nosso Palestra / Palmeiras',
-  },
-  {
-    id: '699842191757118',
-    endpoint: '/api/news/699842191757118',
-    category: 'Goiás',
-    site: 'portal6.com.br',
-    type: 'wp-api',
-    name: 'Portal 6 Goiás',
+    id: "6571187291942",
+    endpoint: "/api/news/6571187291942",
+    category: "Tocantins",
+    site: "",
+    type: "wp-api",
+    name: "Tocantins",
+  },
+  {
+    id: "6424291362274",
+    endpoint: "/api/news/6424291362274",
+    category: "Educação",
+    site: "",
+    type: "wp-api",
+    name: "Educação",
+  },
+  {
+    id: "9482399189391",
+    endpoint: "/api/news/9482399189391",
+    category: "Justiça",
+    site: "",
+    type: "wp-api",
+    name: "Justiça",
+  },
+  {
+    id: "1216294345584",
+    endpoint: "/api/news/1216294345584",
+    category: "Tocantins",
+    site: "",
+    type: "wp-api",
+    name: "Tocantins",
+  },
+  {
+    id: "4334469414432",
+    endpoint: "/api/news/4334469414432",
+    category: "Tocantins",
+    site: "",
+    type: "wp-api",
+    name: "Tocantins",
+  },
+  {
+    id: "1144428532544",
+    endpoint: "/api/news/1144428532544",
+    category: "Notícias Gerais",
+    site: "",
+    type: "wp-api",
+    name: "Notícias Gerais",
+  },
+  {
+    id: "7727428425279",
+    endpoint: "/api/news/7727428425279",
+    category: "Tocantins",
+    site: "",
+    type: "wp-api",
+    name: "Tocantins",
+  },
+  {
+    id: "3386542816798",
+    endpoint: "/api/news/3386542816798",
+    category: "Economia",
+    site: "",
+    type: "wp-api",
+    name: "Economia",
+  },
+  {
+    id: "2429537983919",
+    endpoint: "/api/news/2429537983919",
+    category: "Esporte",
+    site: "",
+    type: "wp-api",
+    name: "Esporte",
+  },
+  {
+    id: "6242412692949",
+    endpoint: "/api/news/6242412692949",
+    category: "Notícias Gerais",
+    site: "",
+    type: "wp-api",
+    name: "Notícias Gerais",
+  },
+  {
+    id: "3422817479195",
+    endpoint: "/api/news/3422817479195",
+    category: "Finanças",
+    site: "",
+    type: "wp-api",
+    name: "Finanças",
+  },
+  {
+    id: "6389841444633",
+    endpoint: "/api/news/6389841444633",
+    category: "Palmeiras",
+    site: "",
+    type: "wp-api",
+    name: "Palmeiras",
+  },
+  {
+    id: "8346116142997",
+    endpoint: "/api/news/8346116142997",
+    category: "Goiás",
+    site: "",
+    type: "wp-api",
+    name: "Goiás",
   },
   {
-    id: '431642583394448',
-    endpoint: '/api/news/431642583394448',
-    category: 'Goiás',
-    site: 'folhadoaraguaia.com.br',
-    type: 'wp-api',
-    name: 'Folha do Araguaia',
+    id: "4168916172248",
+    endpoint: "/api/news/4168916172248",
+    category: "Goiás",
+    site: "",
+    type: "wp-api",
+    name: "Goiás",
   },
   {
-    id: '232452491983424',
-    endpoint: '/api/news/232452491983424',
-    category: 'Goiás',
-    site: 'jornalopcao.com.br',
-    type: 'wp-api',
-    name: 'Jornal Opção Goiás',
+    id: "8929856116462",
+    endpoint: "/api/news/8929856116462",
+    category: "Goiás",
+    site: "",
+    type: "wp-api",
+    name: "Goiás",
   },
   {
-    id: '382992878388555',
-    endpoint: '/api/news/382992878388555',
-    category: 'Justiça',
-    site: 'direitonews.com.br',
-    type: 'wp-api',
-    name: 'Direito News',
+    id: "8132269214748",
+    endpoint: "/api/news/8132269214748",
+    category: "Justiça",
+    site: "",
+    type: "wp-api",
+    name: "Justiça",
   },
   {
-    id: '912895989897239',
-    endpoint: '/api/news/912895989897239',
-    category: 'Justiça',
-    site: 'conjur.com.br',
-    type: 'wp-api',
-    name: 'Consultor Jurídico (ConJur)',
+    id: "3429813199232",
+    endpoint: "/api/news/3429813199232",
+    category: "Justiça",
+    site: "",
+    type: "wp-api",
+    name: "Justiça",
   },
   {
-    id: '552434895747434',
-    endpoint: '/api/news/552434895747434',
-    category: 'Justiça',
-    site: 'migalhas.com.br',
-    type: 'wp-api',
-    name: 'Migalhas Jurídicas',
+    id: "5432383432343",
+    endpoint: "/api/news/5432383432343",
+    category: "Justiça",
+    site: "",
+    type: "wp-api",
+    name: "Justiça",
   },
   {
-    id: '363855955883429',
-    endpoint: '/api/news/363855955883429',
-    category: 'Santa Catarina',
-    site: 'ndmais.com.br',
-    type: 'wp-api',
-    name: 'ND Mais Santa Catarina',
+    id: "1492834928862",
+    endpoint: "/api/news/1492834928862",
+    category: "Santa Catarina",
+    site: "",
+    type: "wp-api",
+    name: "Santa Catarina",
   },
   {
-    id: '214239935451987',
-    endpoint: '/api/news/214239935451987',
-    category: 'Tocantins',
-    site: 't1noticias.com.br',
-    type: 'wp-api',
-    name: 'T1 Notícias TO',
+    id: "3218295838848",
+    endpoint: "/api/news/3218295838848",
+    category: "Tocantins",
+    site: "",
+    type: "wp-api",
+    name: "Tocantins",
   },
   {
-    id: '134352574919451',
-    endpoint: '/api/news/134352574919451',
-    category: 'Tocantins',
-    site: 'folhadobico.com.br',
-    type: 'wp-api',
-    name: 'Folha do Bico TO',
+    id: "3388113412422",
+    endpoint: "/api/news/3388113412422",
+    category: "Tocantins",
+    site: "",
+    type: "wp-api",
+    name: "Tocantins",
   },
   {
-    id: '332328244549349',
-    endpoint: '/api/news/332328244549349',
-    category: 'Tocantins',
-    site: 'conexaoto.com.br',
-    type: 'wp-api',
-    name: 'Conexão Tocantins',
+    id: "9444246624891",
+    endpoint: "/api/news/9444246624891",
+    category: "Tocantins",
+    site: "",
+    type: "wp-api",
+    name: "Tocantins",
   },
   {
-    id: '663841226123673',
-    endpoint: '/api/news/663841226123673',
-    category: 'Tocantins',
-    site: 'afnoticias.com.br',
-    type: 'wp-api',
-    name: 'AF Notícias TO',
+    id: "3592837212343",
+    endpoint: "/api/news/3592837212343",
+    category: "Tocantins",
+    site: "",
+    type: "wp-api",
+    name: "Tocantins",
   },
   {
-    id: '239261469443631',
-    endpoint: '/api/news/239261469443631',
-    category: 'Tocantins',
-    site: 'portalonorte.com.br',
-    type: 'wp-api',
-    name: 'Portal O Norte TO',
+    id: "3313974548439",
+    endpoint: "/api/news/3313974548439",
+    category: "Tocantins",
+    site: "",
+    type: "wp-api",
+    name: "Tocantins",
   },
   {
-    id: '172626478241883',
-    endpoint: '/api/news/172626478241883',
-    category: 'Tocantins',
-    site: 'araguainanoticias.com.br',
-    type: 'wp-api',
-    name: 'Araguaína Notícias',
+    id: "7125539114898",
+    endpoint: "/api/news/7125539114898",
+    category: "Tocantins",
+    site: "",
+    type: "wp-api",
+    name: "Tocantins",
   },
   {
-    id: '151892189935957',
-    endpoint: '/api/news/151892189935957',
-    category: 'Esporte',
-    site: 'globoesporte.globo.com',
-    type: 'rss',
-    name: 'Globo Esporte Nacional',
+    id: "9124882157745",
+    endpoint: "/api/news/9124882157745",
+    category: "Esporte",
+    site: "",
+    type: "wp-api",
+    name: "Esporte",
   },
   {
-    id: '432221191486213',
-    endpoint: '/api/news/432221191486213',
-    category: 'Notícias Gerais',
-    site: 'g1.globo.com',
-    type: 'rss',
-    name: 'Notícias do Dia',
+    id: "8281449136684",
+    endpoint: "/api/news/8281449136684",
+    category: "Notícias Gerais",
+    site: "",
+    type: "wp-api",
+    name: "Notícias Gerais",
   },
   {
-    id: '427785761975213',
-    endpoint: '/api/news/427785761975213',
-    category: 'Notícias Gerais',
-    site: 'g1.globo.com',
-    type: 'rss',
-    name: 'Radar Nacional',
+    id: "9886348421411",
+    endpoint: "/api/news/9886348421411",
+    category: "Notícias Gerais",
+    site: "",
+    type: "rss",
+    name: "Notícias Gerais",
   },
   {
-    id: '892535683444992',
-    endpoint: '/api/news/892535683444992',
-    category: 'Santa Catarina',
-    site: 'g1.globo.com',
-    type: 'rss',
-    name: 'Santa Catarina Notícias',
+    id: "5923414182828",
+    endpoint: "/api/news/5923414182828",
+    category: "Santa Catarina",
+    site: "",
+    type: "rss",
+    name: "Santa Catarina",
   },
   {
-    id: '974849684945474',
-    endpoint: '/api/news/974849684945474',
-    category: 'Tocantins',
-    site: 'g1.globo.com',
-    type: 'rss',
-    name: 'Tocantins Geral',
+    id: "7915414156447",
+    endpoint: "/api/news/7915414156447",
+    category: "Tocantins",
+    site: "",
+    type: "rss",
+    name: "Tocantins",
   },
   {
-    id: '324454919423913',
-    endpoint: '/api/news/324454919423913',
-    category: 'Sergipe',
-    site: 'g1.globo.com',
-    type: 'rss',
-    name: 'Sergipe Notícias',
+    id: "2433821824848",
+    endpoint: "/api/news/2433821824848",
+    category: "Sergipe",
+    site: "",
+    type: "rss",
+    name: "Sergipe",
   },
   {
-    id: '691371344441814',
-    endpoint: '/api/news/691371344441814',
-    category: 'Vale do Paraíba e região',
-    site: 'g1.globo.com',
-    type: 'rss',
-    name: 'Vale do Paraíba e Região',
+    id: "9436443519823",
+    endpoint: "/api/news/9436443519823",
+    category: "Vale do Paraíba e região",
+    site: "",
+    type: "rss",
+    name: "Vale do Paraíba e região",
   },
   {
-    id: '897446178272719',
-    endpoint: '/api/news/897446178272719',
-    category: 'São Carlos e Araraquara',
-    site: 'g1.globo.com',
-    type: 'rss',
-    name: 'São Carlos e Araraquara',
+    id: "1839328484191",
+    endpoint: "/api/news/1839328484191",
+    category: "São Carlos e Araraquara",
+    site: "",
+    type: "rss",
+    name: "São Carlos e Araraquara",
   },
   {
-    id: '933194249393993',
-    endpoint: '/api/news/933194249393993',
-    category: 'Santos e Região',
-    site: 'g1.globo.com',
-    type: 'rss',
-    name: 'Santos e Região',
+    id: "3324424181638",
+    endpoint: "/api/news/3324424181638",
+    category: "Santos e Região",
+    site: "",
+    type: "rss",
+    name: "Santos e Região",
   },
   {
-    id: '831839339459297',
-    endpoint: '/api/news/831839339459297',
-    category: 'Ribeirão Preto e Franca',
-    site: 'g1.globo.com',
-    type: 'rss',
-    name: 'Ribeirão Preto e Franca',
+    id: "6196524489144",
+    endpoint: "/api/news/6196524489144",
+    category: "Ribeirão Preto e Franca",
+    site: "",
+    type: "rss",
+    name: "Ribeirão Preto e Franca",
   },
   {
-    id: '419124828553144',
-    endpoint: '/api/news/419124828553144',
-    category: 'Mogi das Cruzes e Suzano',
-    site: 'g1.globo.com',
-    type: 'rss',
-    name: 'Mogi das Cruzes e Suzano',
+    id: "4114381242158",
+    endpoint: "/api/news/4114381242158",
+    category: "Mogi das Cruzes e Suzano",
+    site: "",
+    type: "rss",
+    name: "Mogi das Cruzes e Suzano",
   },
   {
-    id: '723191424424467',
-    endpoint: '/api/news/723191424424467',
-    category: 'Campinas e região',
-    site: 'g1.globo.com',
-    type: 'rss',
-    name: 'Campinas e Região',
+    id: "3849343233418",
+    endpoint: "/api/news/3849343233418",
+    category: "Campinas e região",
+    site: "",
+    type: "rss",
+    name: "Campinas e região",
   },
   {
-    id: '342584813447811',
-    endpoint: '/api/news/342584813447811',
-    category: 'Bauru e Marília',
-    site: 'g1.globo.com',
-    type: 'rss',
-    name: 'Bauru e Marília',
+    id: "3543958594834",
+    endpoint: "/api/news/3543958594834",
+    category: "Bauru e Marília",
+    site: "",
+    type: "rss",
+    name: "Bauru e Marília",
   },
   {
-    id: '254882472956384',
-    endpoint: '/api/news/254882472956384',
-    category: 'Roraima',
-    site: 'g1.globo.com',
-    type: 'rss',
-    name: 'Roraima Notícias',
+    id: "3845881883451",
+    endpoint: "/api/news/3845881883451",
+    category: "Roraima",
+    site: "",
+    type: "rss",
+    name: "Roraima",
   },
   {
-    id: '245424281243145',
-    endpoint: '/api/news/245424281243145',
-    category: 'Rondônia',
-    site: 'g1.globo.com',
-    type: 'rss',
-    name: 'Rondônia Notícias',
+    id: "1422286119169",
+    endpoint: "/api/news/1422286119169",
+    category: "Rondônia",
+    site: "",
+    type: "rss",
+    name: "Rondônia",
   },
   {
-    id: '766781992469928',
-    endpoint: '/api/news/766781992469928',
-    category: 'Rio Grande do Sul',
-    site: 'g1.globo.com',
-    type: 'rss',
-    name: 'Rio Grande do Sul',
+    id: "2748323482438",
+    endpoint: "/api/news/2748323482438",
+    category: "Rio Grande do Sul",
+    site: "",
+    type: "rss",
+    name: "Rio Grande do Sul",
   },
   {
-    id: '244133125413414',
-    endpoint: '/api/news/244133125413414',
-    category: 'Rio Grande do Norte',
-    site: 'g1.globo.com',
-    type: 'rss',
-    name: 'Rio Grande do Norte',
+    id: "9257989274575",
+    endpoint: "/api/news/9257989274575",
+    category: "Rio Grande do Norte",
+    site: "",
+    type: "rss",
+    name: "Rio Grande do Norte",
   },
   {
-    id: '161349844169333',
-    endpoint: '/api/news/161349844169333',
-    category: 'Sul e Costa Verde Fluminense',
-    site: 'g1.globo.com',
-    type: 'rss',
-    name: 'Sul e Costa Verde Fluminense',
+    id: "4393858142416",
+    endpoint: "/api/news/4393858142416",
+    category: "Sul e Costa Verde Fluminense",
+    site: "",
+    type: "rss",
+    name: "Sul e Costa Verde Fluminense",
   },
   {
-    id: '831941689473231',
-    endpoint: '/api/news/831941689473231',
-    category: 'Norte Fluminense',
-    site: 'g1.globo.com',
-    type: 'rss',
-    name: 'Norte Fluminense',
+    id: "2186249285838",
+    endpoint: "/api/news/2186249285838",
+    category: "Norte Fluminense",
+    site: "",
+    type: "rss",
+    name: "Norte Fluminense",
   },
   {
-    id: '444363186445964',
-    endpoint: '/api/news/444363186445964',
-    category: 'Região dos Lagos Fluminense',
-    site: 'g1.globo.com',
-    type: 'rss',
-    name: 'Região dos Lagos Fluminense',
+    id: "6632828331491",
+    endpoint: "/api/news/6632828331491",
+    category: "Região dos Lagos Fluminense",
+    site: "",
+    type: "rss",
+    name: "Região dos Lagos Fluminense",
   },
   {
-    id: '818829263524227',
-    endpoint: '/api/news/818829263524227',
-    category: 'Região Serrana Fluminense',
-    site: 'g1.globo.com',
-    type: 'rss',
-    name: 'Região Serrana Fluminense',
+    id: "4792857824177",
+    endpoint: "/api/news/4792857824177",
+    category: "Região Serrana Fluminense",
+    site: "",
+    type: "rss",
+    name: "Região Serrana Fluminense",
   },
   {
-    id: '217484393242793',
-    endpoint: '/api/news/217484393242793',
-    category: 'Petrolina e Região',
-    site: 'g1.globo.com',
-    type: 'rss',
-    name: 'Petrolina e Região',
+    id: "6119924343182",
+    endpoint: "/api/news/6119924343182",
+    category: "Petrolina e Região",
+    site: "",
+    type: "rss",
+    name: "Petrolina e Região",
   },
   {
-    id: '784182842449454',
-    endpoint: '/api/news/784182842449454',
-    category: 'Caruaru e Região',
-    site: 'g1.globo.com',
-    type: 'rss',
-    name: 'Caruaru e Região',
+    id: "6489199234844",
+    endpoint: "/api/news/6489199234844",
+    category: "Caruaru e Região",
+    site: "",
+    type: "rss",
+    name: "Caruaru e Região",
   },
   {
-    id: '645274655999426',
-    endpoint: '/api/news/645274655999426',
-    category: 'Norte e Noroeste do Paraná',
-    site: 'g1.globo.com',
-    type: 'rss',
-    name: 'Norte e Noroeste do Paraná',
+    id: "4584883333742",
+    endpoint: "/api/news/4584883333742",
+    category: "Norte e Noroeste do Paraná",
+    site: "",
+    type: "rss",
+    name: "Norte e Noroeste do Paraná",
   },
   {
-    id: '451463938442293',
-    endpoint: '/api/news/451463938442293',
-    category: 'Oeste e Sudoeste do Paraná',
-    site: 'g1.globo.com',
-    type: 'rss',
-    name: 'Oeste e Sudoeste do Paraná',
+    id: "8519233519764",
+    endpoint: "/api/news/8519233519764",
+    category: "Oeste e Sudoeste do Paraná",
+    site: "",
+    type: "rss",
+    name: "Oeste e Sudoeste do Paraná",
   },
   {
-    id: '113941349457784',
-    endpoint: '/api/news/113941349457784',
-    category: 'Campos Gerais e Sul do Paraná',
-    site: 'g1.globo.com',
-    type: 'rss',
-    name: 'Campos Gerais e Sul do Paraná',
+    id: "1284929119511",
+    endpoint: "/api/news/1284929119511",
+    category: "Campos Gerais e Sul do Paraná",
+    site: "",
+    type: "rss",
+    name: "Campos Gerais e Sul do Paraná",
   },
   {
-    id: '499199511484742',
-    endpoint: '/api/news/499199511484742',
-    category: 'Paraná',
-    site: 'g1.globo.com',
-    type: 'rss',
-    name: 'Paraná Notícias',
+    id: "3347141892497",
+    endpoint: "/api/news/3347141892497",
+    category: "Paraná",
+    site: "",
+    type: "rss",
+    name: "Paraná",
   },
   {
-    id: '774995463939238',
-    endpoint: '/api/news/774995463939238',
-    category: 'Paraíba',
-    site: 'g1.globo.com',
-    type: 'rss',
-    name: 'Paraíba Notícias',
+    id: "1245372445124",
+    endpoint: "/api/news/1245372445124",
+    category: "Paraíba",
+    site: "",
+    type: "rss",
+    name: "Paraíba",
   },
   {
-    id: '832514384744418',
-    endpoint: '/api/news/832514384744418',
-    category: 'Pará',
-    site: 'g1.globo.com',
-    type: 'rss',
-    name: 'Pará (Portal News)',
+    id: "9329418888697",
+    endpoint: "/api/news/9329418888697",
+    category: "Pará",
+    site: "",
+    type: "rss",
+    name: "Pará",
   },
   {
-    id: '291958422149444',
-    endpoint: '/api/news/291958422149444',
-    category: 'Zona da Mata Mineira',
-    site: 'g1.globo.com',
-    type: 'rss',
-    name: 'Zona da Mata Mineira',
+    id: "6585819492491",
+    endpoint: "/api/news/6585819492491",
+    category: "Zona da Mata Mineira",
+    site: "",
+    type: "rss",
+    name: "Zona da Mata Mineira",
   },
   {
-    id: '138925214465973',
-    endpoint: '/api/news/138925214465973',
-    category: 'Vales de Minas Gerais',
-    site: 'g1.globo.com',
-    type: 'rss',
-    name: 'Vales de Minas Gerais',
+    id: "1824349914845",
+    endpoint: "/api/news/1824349914845",
+    category: "Vales de Minas Gerais",
+    site: "",
+    type: "rss",
+    name: "Vales de Minas Gerais",
   },
   {
-    id: '669176851683213',
-    endpoint: '/api/news/669176851683213',
-    category: 'Sul de Minas',
-    site: 'g1.globo.com',
-    type: 'rss',
-    name: 'Sul de Minas',
+    id: "8454432466834",
+    endpoint: "/api/news/8454432466834",
+    category: "Sul de Minas",
+    site: "",
+    type: "rss",
+    name: "Sul de Minas",
   },
   {
-    id: '932144873293832',
-    endpoint: '/api/news/932144873293832',
-    category: 'Grande Minas',
-    site: 'g1.globo.com',
-    type: 'rss',
-    name: 'Grande Minas',
+    id: "9343643133947",
+    endpoint: "/api/news/9343643133947",
+    category: "Grande Minas",
+    site: "",
+    type: "rss",
+    name: "Grande Minas",
   },
   {
-    id: '338554224496117',
-    endpoint: '/api/news/338554224496117',
-    category: 'Centro-Oeste de Minas',
-    site: 'g1.globo.com',
-    type: 'rss',
-    name: 'Centro-Oeste de Minas',
+    id: "9474943656715",
+    endpoint: "/api/news/9474943656715",
+    category: "Centro-Oeste de Minas",
+    site: "",
+    type: "rss",
+    name: "Centro-Oeste de Minas",
   },
   {
-    id: '164134119431948',
-    endpoint: '/api/news/164134119431948',
-    category: 'Maranhão',
-    site: 'g1.globo.com',
-    type: 'rss',
-    name: 'Maranhão Notícias',
+    id: "9978226349482",
+    endpoint: "/api/news/9978226349482",
+    category: "Maranhão",
+    site: "",
+    type: "rss",
+    name: "Maranhão",
   },
   {
-    id: '399912785456532',
-    endpoint: '/api/news/399912785456532',
-    category: 'Amazonas',
-    site: 'g1.globo.com',
-    type: 'rss',
-    name: 'Amazonas Notícias',
+    id: "8928139593792",
+    endpoint: "/api/news/8928139593792",
+    category: "Amazonas",
+    site: "",
+    type: "rss",
+    name: "Amazonas",
   },
   {
-    id: '446149137873394',
-    endpoint: '/api/news/446149137873394',
-    category: 'Amapá',
-    site: 'g1.globo.com',
-    type: 'rss',
-    name: 'Amapá Notícias',
+    id: "2543318141136",
+    endpoint: "/api/news/2543318141136",
+    category: "Amapá",
+    site: "",
+    type: "rss",
+    name: "Amapá",
   },
   {
-    id: '597174398438273',
-    endpoint: '/api/news/597174398438273',
-    category: 'Alagoas',
-    site: 'g1.globo.com',
-    type: 'rss',
-    name: 'Alagoas Notícias',
+    id: "9863321459192",
+    endpoint: "/api/news/9863321459192",
+    category: "Alagoas",
+    site: "",
+    type: "rss",
+    name: "Alagoas",
   },
   {
-    id: '528374619283746',
-    endpoint: '/api/news/528374619283746',
-    category: 'Justiça',
-    site: 'ambitojuridico.com.br',
-    type: 'wp-api',
-    name: 'Âmbito Jurídico',
-  },
-  {
-    id: '194728365019283',
-    endpoint: '/api/news/194728365019283',
-    category: 'Justiça',
-    site: 'justa.org.br',
-    type: 'wp-api',
-    name: 'Justa Org',
-  },
-  {
-    id: '736482910573649',
-    endpoint: '/api/news/736482910573649',
-    category: 'Justiça',
-    site: 'odireito.com',
-    type: 'wp-api',
-    name: 'O Direito',
-  },
-  {
-    id: '813947265038471',
-    endpoint: '/api/news/813947265038471',
-    category: 'Justiça',
-    site: 'rotajuridica.com.br',
-    type: 'wp-api',
-    name: 'Rota Jurídica',
-  },
-  {
-    id: '142414733688861',
-    endpoint: '/api/news/142414733688861',
-    category: 'Acre',
-    site: 'g1.globo.com',
-    type: 'rss',
-    name: 'Acre Notícias',
-  },
-  {
-    id: '494339475812222',
-    endpoint: '/api/news/494339475812222',
-    category: 'Turismo e Viagem',
-    site: 'g1.globo.com',
-    type: 'rss',
-    name: 'Turismo e Viagem',
-  },
-  {
-    id: '158311376392135',
-    endpoint: '/api/news/158311376392135',
-    category: 'Tecnologia e Games',
-    site: 'g1.globo.com',
-    type: 'rss',
-    name: 'Tecnologia e Games',
-  },
-  {
-    id: '429447432493472',
-    endpoint: '/api/news/429447432493472',
-    category: 'Pop & Arte',
-    site: 'g1.globo.com',
-    type: 'rss',
-    name: 'Pop, Arte & Cultura',
-  },
-  {
-    id: '477372321386414',
-    endpoint: '/api/news/477372321386414',
-    category: 'Mundo',
-    site: 'g1.globo.com',
-    type: 'rss',
-    name: 'Mundo & Internacional',
-  },
-  {
-    id: '174666593891425',
-    endpoint: '/api/news/174666593891425',
-    category: 'Loterias',
-    site: 'g1.globo.com',
-    type: 'rss',
-    name: 'Loterias & Resultados',
-  },
-  {
-    id: '863534413172943',
-    endpoint: '/api/news/863534413172943',
-    category: 'Educação',
-    site: 'g1.globo.com',
-    type: 'rss',
-    name: 'Educação & Carreiras',
-  },
-  {
-    id: '411718493791472',
-    endpoint: '/api/news/411718493791472',
-    category: 'Economia',
-    site: 'g1.globo.com',
-    type: 'rss',
-    name: 'Economia & Negócios',
-  },
-  {
-    id: '123961798934467',
-    endpoint: '/api/news/123961798934467',
-    category: 'Autoesporte',
-    site: 'g1.globo.com',
-    type: 'rss',
-    name: 'Autoesporte & Veículos',
-  },
+    id: "8943219782427",
+    endpoint: "/api/news/8943219782427",
+    category: "Justiça",
+    site: "",
+    type: "wp-api",
+    name: "Justiça",
+  },
+  {
+    id: "9981429932433",
+    endpoint: "/api/news/9981429932433",
+    category: "Justiça",
+    site: "",
+    type: "wp-api",
+    name: "Justiça",
+  },
+  {
+    id: "2518991918643",
+    endpoint: "/api/news/2518991918643",
+    category: "Justiça",
+    site: "",
+    type: "wp-api",
+    name: "Justiça",
+  },
+  {
+    id: "6874538729284",
+    endpoint: "/api/news/6874538729284",
+    category: "Justiça",
+    site: "",
+    type: "wp-api",
+    name: "Justiça",
+  },
+  {
+    id: "9848634844762",
+    endpoint: "/api/news/9848634844762",
+    category: "Acre",
+    site: "",
+    type: "rss",
+    name: "Acre",
+  },
+  {
+    id: "7392433713338",
+    endpoint: "/api/news/7392433713338",
+    category: "Turismo e Viagem",
+    site: "",
+    type: "rss",
+    name: "Turismo e Viagem",
+  },
+  {
+    id: "4415826156744",
+    endpoint: "/api/news/4415826156744",
+    category: "Tecnologia e Games",
+    site: "",
+    type: "rss",
+    name: "Tecnologia e Games",
+  },
+  {
+    id: "8833539123215",
+    endpoint: "/api/news/8833539123215",
+    category: "Pop & Arte",
+    site: "",
+    type: "rss",
+    name: "Pop & Arte",
+  },
+  {
+    id: "2431124818641",
+    endpoint: "/api/news/2431124818641",
+    category: "Mundo",
+    site: "",
+    type: "rss",
+    name: "Mundo",
+  },
+  {
+    id: "1183417944433",
+    endpoint: "/api/news/1183417944433",
+    category: "Loterias",
+    site: "",
+    type: "rss",
+    name: "Loterias",
+  },
+  {
+    id: "5498139197391",
+    endpoint: "/api/news/5498139197391",
+    category: "Educação",
+    site: "",
+    type: "rss",
+    name: "Educação",
+  },
+  {
+    id: "4524183818294",
+    endpoint: "/api/news/4524183818294",
+    category: "Economia",
+    site: "",
+    type: "rss",
+    name: "Economia",
+  },
+  {
+    id: "3815913481419",
+    endpoint: "/api/news/3815913481419",
+    category: "Autoesporte",
+    site: "",
+    type: "rss",
+    name: "Autoesporte",
+  }
 ];
 
-// All 50 categories with their group classification
+export function normalizeCategoryText(str?: string): string {
+  if (!str) return '';
+  return str
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .trim()
+    .replace(/[-_]+/g, ' ');
+}
+
 export const ALL_CATEGORIES: CategoryInfo[] = [
-  // Temas Centrais
-  { id: 'Pará', name: 'Pará', count: 1, highlight: true, group: 'especial' },
-  { id: 'Notícias Gerais', name: 'Notícias Gerais', count: 4, group: 'tema' },
-  { id: 'Economia', name: 'Economia', count: 2, group: 'tema' },
-  { id: 'Justiça', name: 'Justiça', count: 8, group: 'tema' },
-  { id: 'Educação', name: 'Educação', count: 2, group: 'tema' },
-  { id: 'Esporte', name: 'Esporte', count: 2, group: 'tema' },
-  { id: 'Tecnologia e Games', name: 'Tecnologia e Games', count: 1, group: 'tema' },
-  { id: 'Mundo', name: 'Mundo', count: 1, group: 'tema' },
-  { id: 'Finanças', name: 'Finanças', count: 1, group: 'tema' },
-  { id: 'Pop & Arte', name: 'Pop & Arte', count: 1, group: 'tema' },
-  { id: 'Turismo e Viagem', name: 'Turismo e Viagem', count: 1, group: 'tema' },
-  { id: 'Autoesporte', name: 'Autoesporte', count: 1, group: 'tema' },
-  { id: 'Loterias', name: 'Loterias', count: 1, group: 'tema' },
-  { id: 'Palmeiras', name: 'Palmeiras', count: 1, group: 'tema' },
-
-  // Regiões e Estados
-  { id: 'Tocantins', name: 'Tocantins', count: 11, group: 'regiao' },
-  { id: 'Goiás', name: 'Goiás', count: 3, group: 'regiao' },
-  { id: 'Santa Catarina', name: 'Santa Catarina', count: 2, group: 'regiao' },
-  { id: 'Paraná', name: 'Paraná', count: 1, group: 'regiao' },
-  { id: 'Rio Grande do Sul', name: 'Rio Grande do Sul', count: 1, group: 'regiao' },
-  { id: 'Rio Grande do Norte', name: 'Rio Grande do Norte', count: 1, group: 'regiao' },
-  { id: 'Maranhão', name: 'Maranhão', count: 1, group: 'regiao' },
-  { id: 'Amazonas', name: 'Amazonas', count: 1, group: 'regiao' },
-  { id: 'Amapá', name: 'Amapá', count: 1, group: 'regiao' },
-  { id: 'Alagoas', name: 'Alagoas', count: 1, group: 'regiao' },
-  { id: 'Acre', name: 'Acre', count: 1, group: 'regiao' },
-  { id: 'Rondônia', name: 'Rondônia', count: 1, group: 'regiao' },
-  { id: 'Roraima', name: 'Roraima', count: 1, group: 'regiao' },
-  { id: 'Sergipe', name: 'Sergipe', count: 1, group: 'regiao' },
-  { id: 'Paraíba', name: 'Paraíba', count: 1, group: 'regiao' },
-
-  // Regiões Metropolitanas e Interior
-  { id: 'Campinas e região', name: 'Campinas e Região', count: 1, group: 'regiao' },
-  { id: 'Santos e Região', name: 'Santos e Região', count: 1, group: 'regiao' },
-  { id: 'Ribeirão Preto e Franca', name: 'Ribeirão Preto e Franca', count: 1, group: 'regiao' },
-  { id: 'São Carlos e Araraquara', name: 'São Carlos e Araraquara', count: 1, group: 'regiao' },
-  { id: 'Vale do Paraíba e região', name: 'Vale do Paraíba', count: 1, group: 'regiao' },
-  { id: 'Mogi das Cruzes e Suzano', name: 'Mogi das Cruzes e Suzano', count: 1, group: 'regiao' },
-  { id: 'Bauru e Marília', name: 'Bauru e Marília', count: 1, group: 'regiao' },
-
-  { id: 'Grande Minas', name: 'Grande Minas', count: 1, group: 'regiao' },
-  { id: 'Sul de Minas', name: 'Sul de Minas', count: 1, group: 'regiao' },
-  { id: 'Zona da Mata Mineira', name: 'Zona da Mata Mineira', count: 1, group: 'regiao' },
-  { id: 'Vales de Minas Gerais', name: 'Vales de Minas Gerais', count: 1, group: 'regiao' },
-  { id: 'Centro-Oeste de Minas', name: 'Centro-Oeste de Minas', count: 1, group: 'regiao' },
-
-  { id: 'Região dos Lagos Fluminense', name: 'Região dos Lagos (RJ)', count: 1, group: 'regiao' },
-  { id: 'Região Serrana Fluminense', name: 'Região Serrana (RJ)', count: 1, group: 'regiao' },
-  { id: 'Norte Fluminense', name: 'Norte Fluminense (RJ)', count: 1, group: 'regiao' },
-  { id: 'Sul e Costa Verde Fluminense', name: 'Sul e Costa Verde (RJ)', count: 1, group: 'regiao' },
-
-  { id: 'Norte e Noroeste do Paraná', name: 'Norte e Noroeste do PR', count: 1, group: 'regiao' },
-  { id: 'Oeste e Sudoeste do Paraná', name: 'Oeste e Sudoeste do PR', count: 1, group: 'regiao' },
-  { id: 'Campos Gerais e Sul do Paraná', name: 'Campos Gerais e Sul do PR', count: 1, group: 'regiao' },
-
-  { id: 'Petrolina e Região', name: 'Petrolina e Região', count: 1, group: 'regiao' },
-  { id: 'Caruaru e Região', name: 'Caruaru e Região', count: 1, group: 'regiao' },
+  { id: "all", name: "Todas as Notícias", slug: "todas", count: 76, group: "tema" },
+  { id: "Política", name: "Política", slug: "politica", count: 10, group: "tema", highlight: true },
+  { id: "Economia", name: "Economia", slug: "economia", count: 10, group: "tema", highlight: true },
+  { id: "Justiça", name: "Justiça", slug: "justica", count: 8, group: "tema", highlight: true },
+  { id: "Saúde", name: "Saúde", slug: "saude", count: 6, group: "tema", highlight: true },
+  { id: "Educação", name: "Educação", slug: "educacao", count: 2, group: "tema", highlight: true },
+  { id: "Cultura", name: "Cultura", slug: "cultura", count: 2, group: "tema" },
+  { id: "Esporte", name: "Esporte", slug: "esporte", count: 4, group: "tema", highlight: true },
+  { id: "Tecnologia e Games", name: "Tecnologia & Games", slug: "tecnologia-e-games", count: 2, group: "tema" },
+  { id: "Notícias Gerais", name: "Gerais", slug: "noticias-gerais", count: 4, group: "tema" },
+  { id: "Finanças", name: "Finanças", slug: "financas", count: 1, group: "tema" },
+  { id: "Palmeiras", name: "Palmeiras", slug: "palmeiras", count: 1, group: "tema" },
+  { id: "Autoesporte", name: "Autoesporte", slug: "autoesporte", count: 1, group: "tema" },
+  { id: "Pop & Arte", name: "Pop & Arte", slug: "pop-e-arte", count: 1, group: "tema" },
+  { id: "Turismo e Viagem", name: "Turismo & Viagem", slug: "turismo-e-viagem", count: 1, group: "tema" },
+  { id: "Loterias", name: "Loterias", slug: "loterias", count: 1, group: "tema" },
+  { id: "Tocantins", name: "Tocantins", slug: "tocantins", count: 11, group: "regiao", highlight: true },
+  { id: "Goiás", name: "Goiás", slug: "goias", count: 3, group: "regiao", highlight: true },
+  { id: "Pará", name: "Pará", slug: "para", count: 1, group: "regiao", highlight: true },
+  { id: "Paraná", name: "Paraná", slug: "parana", count: 4, group: "regiao" },
+  { id: "Santa Catarina", name: "Santa Catarina", slug: "santa-catarina", count: 2, group: "regiao" },
+  { id: "Maranhão", name: "Maranhão", slug: "maranhao", count: 1, group: "regiao" },
+  { id: "Paraíba", name: "Paraíba", slug: "paraiba", count: 1, group: "regiao" },
+  { id: "Rio Grande do Sul", name: "Rio Grande do Sul", slug: "rio-grande-do-sul", count: 1, group: "regiao" },
+  { id: "Rio Grande do Norte", name: "Rio Grande do Norte", slug: "rio-grande-do-norte", count: 1, group: "regiao" },
+  { id: "Amazonas", name: "Amazonas", slug: "amazonas", count: 1, group: "regiao" },
+  { id: "Acre", name: "Acre", slug: "acre", count: 1, group: "regiao" },
+  { id: "Alagoas", name: "Alagoas", slug: "alagoas", count: 1, group: "regiao" },
+  { id: "Amapá", name: "Amapá", slug: "amapa", count: 1, group: "regiao" },
+  { id: "Rondônia", name: "Rondônia", slug: "rondonia", count: 1, group: "regiao" },
+  { id: "Roraima", name: "Roraima", slug: "roraima", count: 1, group: "regiao" },
+  { id: "Sergipe", name: "Sergipe", slug: "sergipe", count: 1, group: "regiao" },
+  { id: "Mundo", name: "Mundo", slug: "mundo", count: 1, group: "regiao" },
+  { id: "Campinas e região", name: "Campinas e Região", slug: "campinas-e-regiao", count: 1, group: "regiao" },
+  { id: "Bauru e Marília", name: "Bauru e Marília", slug: "bauru-e-marilia", count: 1, group: "regiao" },
+  { id: "Santos e Região", name: "Santos e Região", slug: "santos-e-regiao", count: 1, group: "regiao" },
+  { id: "São Carlos e Araraquara", name: "São Carlos e Araraquara", slug: "sao-carlos-e-araraquara", count: 1, group: "regiao" },
+  { id: "Ribeirão Preto e Franca", name: "Ribeirão Preto e Franca", slug: "ribeirao-preto-e-franca", count: 1, group: "regiao" },
+  { id: "Mogi das Cruzes e Suzano", name: "Mogi das Cruzes e Suzano", slug: "mogi-das-cruzes-e-suzano", count: 1, group: "regiao" },
+  { id: "Vale do Paraíba e região", name: "Vale do Paraíba", slug: "vale-do-paraiba-e-regiao", count: 1, group: "regiao" },
+  { id: "Grande Minas", name: "Grande Minas", slug: "grande-minas", count: 1, group: "regiao" },
+  { id: "Sul de Minas", name: "Sul de Minas", slug: "sul-de-minas", count: 1, group: "regiao" },
+  { id: "Centro-Oeste de Minas", name: "Centro-Oeste de Minas", slug: "centro-oeste-de-minas", count: 1, group: "regiao" },
+  { id: "Vales de Minas Gerais", name: "Vales de Minas Gerais", slug: "vales-de-minas-gerais", count: 1, group: "regiao" },
+  { id: "Zona da Mata Mineira", name: "Zona da Mata Mineira", slug: "zona-da-mata-mineira", count: 1, group: "regiao" },
+  { id: "Caruaru e Região", name: "Caruaru e Região", slug: "caruaru-e-regiao", count: 1, group: "regiao" },
+  { id: "Petrolina e Região", name: "Petrolina e Região", slug: "petrolina-e-regiao", count: 1, group: "regiao" },
+  { id: "Norte Fluminense", name: "Norte Fluminense", slug: "norte-fluminense", count: 1, group: "regiao" },
+  { id: "Região dos Lagos Fluminense", name: "Região dos Lagos", slug: "regiao-dos-lagos-fluminense", count: 1, group: "regiao" },
+  { id: "Região Serrana Fluminense", name: "Região Serrana RJ", slug: "regiao-serrana-fluminense", count: 1, group: "regiao" },
+  { id: "Sul e Costa Verde Fluminense", name: "Costa Verde RJ", slug: "sul-e-costa-verde-fluminense", count: 1, group: "regiao" },
+  { id: "Campos Gerais e Sul do Paraná", name: "Campos Gerais PR", slug: "campos-gerais-e-sul-do-parana", count: 1, group: "regiao" },
+  { id: "Norte e Noroeste do Paraná", name: "Norte do Paraná", slug: "norte-e-noroeste-do-parana", count: 1, group: "regiao" },
+  { id: "Oeste e Sudoeste do Paraná", name: "Oeste do Paraná", slug: "oeste-e-sudoeste-do-parana", count: 1, group: "regiao" },
 ];
+
+export function resolveCategoryDisplayName(slugOrName: string): string {
+  if (!slugOrName) return 'Notícias Gerais';
+  const cleanSlug = categorySlugify(decodeURIComponent(slugOrName));
+  const norm = normalizeCategoryText(decodeURIComponent(slugOrName));
+
+  const exact = ALL_CATEGORIES.find(
+    (c) =>
+      c.slug === cleanSlug ||
+      categorySlugify(c.id) === cleanSlug ||
+      normalizeCategoryText(c.id) === norm ||
+      normalizeCategoryText(c.name) === norm
+  );
+  if (exact) return exact.id;
+
+  // Mapeamentos específicos por slug limpo
+  if (cleanSlug.includes('politica')) return 'Política';
+  if (cleanSlug.includes('economia') || cleanSlug.includes('financ')) return 'Economia';
+  if (cleanSlug.includes('justica')) return 'Justiça';
+  if (cleanSlug.includes('saude')) return 'Saúde';
+  if (cleanSlug.includes('educacao')) return 'Educação';
+  if (cleanSlug.includes('cultura') || cleanSlug.includes('pop') || cleanSlug.includes('arte')) return 'Cultura';
+  if (cleanSlug.includes('esporte') || cleanSlug.includes('futebol') || cleanSlug.includes('palmeiras')) return 'Esporte';
+  if (cleanSlug.includes('tecnologia') || cleanSlug.includes('games')) return 'Tecnologia e Games';
+  if (cleanSlug.includes('para') && !cleanSlug.includes('parana') && !cleanSlug.includes('paraiba')) return 'Pará';
+  if (cleanSlug.includes('parana')) return 'Paraná';
+  if (cleanSlug.includes('paraiba')) return 'Paraíba';
+  if (cleanSlug.includes('maranhao')) return 'Maranhão';
+  if (cleanSlug.includes('tocantins')) return 'Tocantins';
+  if (cleanSlug.includes('goias')) return 'Goiás';
+  if (cleanSlug.includes('santa-catarina') || cleanSlug.includes('santacatarina')) return 'Santa Catarina';
+  if (cleanSlug.includes('rio-grande-do-sul')) return 'Rio Grande do Sul';
+  if (cleanSlug.includes('rio-grande-do-norte')) return 'Rio Grande do Norte';
+  if (cleanSlug.includes('amazonas')) return 'Amazonas';
+  if (cleanSlug.includes('acre')) return 'Acre';
+  if (cleanSlug.includes('alagoas')) return 'Alagoas';
+  if (cleanSlug.includes('amapa')) return 'Amapá';
+  if (cleanSlug.includes('rondonia')) return 'Rondônia';
+  if (cleanSlug.includes('roraima')) return 'Roraima';
+  if (cleanSlug.includes('sergipe')) return 'Sergipe';
+  if (cleanSlug.includes('mundo') || cleanSlug.includes('internacional')) return 'Mundo';
+
+  return slugOrName.charAt(0).toUpperCase() + slugOrName.slice(1);
+}
 
 export function getSourcesByCategory(category: string): NewsApiSourceItem[] {
-  if (!category || category === 'all') return ALL_NEWS_SOURCES;
-  const target = category.trim().toLowerCase();
-  return ALL_NEWS_SOURCES.filter(
-    (s) => s.category.toLowerCase() === target || s.id === category
+  if (!category || category === "all" || category === "favoritos") return ALL_NEWS_SOURCES;
+  const target = normalizeCategoryText(category);
+
+  // Mapeamentos semânticos editoriais prioritários
+  if (target === "politica") {
+    return ALL_NEWS_SOURCES.filter(s =>
+      s.id === "8281449136684" ||
+      s.id === "1144428532544" ||
+      s.id === "9482399189391" ||
+      normalizeCategoryText(s.category).includes("politica") ||
+      normalizeCategoryText(s.category).includes("gerais") ||
+      normalizeCategoryText(s.category).includes("justica")
+    );
+  }
+
+  if (target === "saude") {
+    return ALL_NEWS_SOURCES.filter(s =>
+      s.id === "8346116142997" ||
+      s.id === "9886348421411" ||
+      s.id === "1144428532544" ||
+      normalizeCategoryText(s.category).includes("saude") ||
+      normalizeCategoryText(s.category).includes("gerais")
+    );
+  }
+
+  if (target === "cultura" || target.includes("pop") || target.includes("arte")) {
+    return ALL_NEWS_SOURCES.filter(s =>
+      s.id === "8833539123215" ||
+      normalizeCategoryText(s.category).includes("pop") ||
+      normalizeCategoryText(s.category).includes("arte") ||
+      normalizeCategoryText(s.category).includes("cultura")
+    );
+  }
+
+  if (target === "esporte" || target === "esportes") {
+    return ALL_NEWS_SOURCES.filter(s =>
+      normalizeCategoryText(s.category).includes("esporte") ||
+      normalizeCategoryText(s.category).includes("palmeiras") ||
+      normalizeCategoryText(s.category).includes("autoesporte")
+    );
+  }
+
+  if (target === "economia" || target.includes("financ")) {
+    return ALL_NEWS_SOURCES.filter(s =>
+      normalizeCategoryText(s.category).includes("economia") ||
+      normalizeCategoryText(s.category).includes("financ")
+    );
+  }
+
+  if (target.includes("tecnologia") || target.includes("games")) {
+    return ALL_NEWS_SOURCES.filter(s =>
+      normalizeCategoryText(s.category).includes("tecnologia") ||
+      normalizeCategoryText(s.category).includes("games")
+    );
+  }
+
+  if (target.includes("gerais")) {
+    return ALL_NEWS_SOURCES.filter(s =>
+      normalizeCategoryText(s.category).includes("gerais")
+    );
+  }
+
+  if (target === "parana") {
+    return ALL_NEWS_SOURCES.filter(s =>
+      normalizeCategoryText(s.category).includes("parana")
+    );
+  }
+
+  if (target === "para") {
+    return ALL_NEWS_SOURCES.filter(s =>
+      normalizeCategoryText(s.category) === "para" ||
+      s.id === "9329418888697"
+    );
+  }
+
+  // 1. Busca exata normalizada (desconsiderando acentos)
+  const exact = ALL_NEWS_SOURCES.filter(
+    s => normalizeCategoryText(s.category) === target || s.id === category
   );
+  if (exact.length > 0) return exact;
+
+  // 2. Busca parcial normalizada
+  const partial = ALL_NEWS_SOURCES.filter(
+    s => normalizeCategoryText(s.category).includes(target) || target.includes(normalizeCategoryText(s.category))
+  );
+  if (partial.length > 0) return partial;
+
+  // Fallback seguro: se nenhuma fonte corresponder, retorna fontes de notícias gerais
+  return ALL_NEWS_SOURCES.filter(s => normalizeCategoryText(s.category).includes("gerais")).slice(0, 4);
 }
 
 export function getSourceById(id: string): NewsApiSourceItem | undefined {
-  return ALL_NEWS_SOURCES.find((s) => s.id === id);
+  return ALL_NEWS_SOURCES.find(s => s.id === id);
 }

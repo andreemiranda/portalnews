@@ -1,7 +1,25 @@
+/**
+ * Configuração dos Endpoints da API REST de Notícias
+ * Prioriza o endpoint estável e de alta velocidade do Vercel com fallback automático
+ */
+
+const rawBase = process.env.NEWS_API_BASE_URL?.trim() || '';
+const rawFallback = process.env.NEWS_API_FALLBACK_URL?.trim() || '';
+
+// Se a base configurada for Netlify (que excede cota e retorna 503), prioriza o endpoint estável do Vercel
+const isNetlifyBase = rawBase.includes('netlify');
+const primaryUrl = isNetlifyBase
+  ? (rawFallback || 'https://news-sources-api.vercel.app')
+  : (rawBase || 'https://news-sources-api.vercel.app');
+
+const fallbackUrl = isNetlifyBase
+  ? (rawBase || 'https://api-news-media.netlify.app')
+  : (rawFallback || 'https://api-news-media.netlify.app');
+
 export const NEWS_API_CONFIG = {
-  baseUrl: process.env.NEWS_API_BASE_URL || 'https://api-news-media.netlify.app',
-  fallbackUrl: process.env.NEWS_API_FALLBACK_URL || 'https://news-sources-api.vercel.app',
-  apiKey: process.env.NEWS_API_KEY || '',
+  baseUrl: primaryUrl,
+  fallbackUrl: fallbackUrl,
+  apiKey: process.env.NEWS_API_KEY || 'bn_88feb5baa3f84955677e8c11453aae352811b9fe6c3398cd',
   endpoints: {
     listAllSources: '/api/news',
     categoryByName: (cat: string) => `/api/news/category/${encodeURIComponent(cat)}`,

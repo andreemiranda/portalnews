@@ -222,9 +222,19 @@ export default function HomePage() {
     if (activeCategory === 'favoritos') {
       result = result.filter((item) => bookmarkedIds.includes(item.id));
     } else if (activeCategory !== 'all') {
-      result = result.filter(
-        (item) => item.category.toLowerCase() === activeCategory.toLowerCase()
-      );
+      const normActive = activeCategory.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
+      const matched = result.filter((item) => {
+        const normCat = (item.category || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
+        const normOrig = (item.originalCategory || item.categoryId || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
+        return (
+          normCat === normActive ||
+          normOrig === normActive ||
+          normCat.includes(normActive) ||
+          normActive.includes(normCat) ||
+          normOrig.includes(normActive)
+        );
+      });
+      result = matched.length > 0 ? matched : result;
     }
 
     if (searchQuery.trim()) {

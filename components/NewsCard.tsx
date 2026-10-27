@@ -9,12 +9,12 @@ import { slugify } from '@/lib/slug';
 
 interface NewsCardProps {
   item: NewsItem;
-  onSelectNews: (item: NewsItem) => void;
-  onToggleBookmark: (item: NewsItem) => void;
-  isBookmarked: boolean;
-  onReadAudio: (item: NewsItem) => void;
-  viewMode: 'grid' | 'compact';
-  fontSize: 'normal' | 'large' | 'xlarge';
+  onSelectNews?: (item: NewsItem) => void;
+  onToggleBookmark?: (item: NewsItem) => void;
+  isBookmarked?: boolean;
+  onReadAudio?: (item: NewsItem) => void;
+  viewMode?: 'grid' | 'compact';
+  fontSize?: 'normal' | 'large' | 'xlarge';
 }
 
 const CATEGORY_STYLES: Record<string, string> = {
@@ -31,10 +31,10 @@ export const NewsCard: React.FC<NewsCardProps> = ({
   item,
   onSelectNews,
   onToggleBookmark,
-  isBookmarked,
+  isBookmarked = false,
   onReadAudio,
-  viewMode,
-  fontSize,
+  viewMode = 'grid',
+  fontSize = 'normal',
 }) => {
   const fontClasses = {
     normal: 'text-base font-bold',
@@ -51,7 +51,7 @@ export const NewsCard: React.FC<NewsCardProps> = ({
   if (viewMode === 'compact') {
     return (
       <div
-        onClick={() => onSelectNews(item)}
+        onClick={() => (onSelectNews ? onSelectNews(item) : undefined)}
         className="bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-2xl p-4 sm:p-5 hover:border-red-500 dark:hover:border-red-500 transition-all cursor-pointer flex items-center gap-4 group shadow-sm hover:shadow-md"
       >
         {item.imageUrl && (
@@ -102,7 +102,7 @@ export const NewsCard: React.FC<NewsCardProps> = ({
               <button
                 onClick={(e) => {
                   e.stopPropagation();
-                  onReadAudio(item);
+                  if (onReadAudio) onReadAudio(item);
                 }}
                 className="p-1.5 text-slate-400 hover:text-red-600 dark:hover:text-red-400 rounded-full hover:bg-slate-100 dark:hover:bg-zinc-800 transition cursor-pointer"
                 title="Ouvir Notícia"
@@ -112,7 +112,7 @@ export const NewsCard: React.FC<NewsCardProps> = ({
               <button
                 onClick={(e) => {
                   e.stopPropagation();
-                  onToggleBookmark(item);
+                  if (onToggleBookmark) onToggleBookmark(item);
                 }}
                 className={`p-1.5 rounded-full transition cursor-pointer ${
                   isBookmarked
@@ -132,7 +132,7 @@ export const NewsCard: React.FC<NewsCardProps> = ({
 
   return (
     <div
-      onClick={() => onSelectNews(item)}
+      onClick={() => (onSelectNews ? onSelectNews(item) : undefined)}
       className="bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-3xl overflow-hidden hover:border-red-500 dark:hover:border-red-500 transition-all cursor-pointer flex flex-col justify-between group shadow-sm hover:shadow-md"
     >
       <div>
@@ -157,7 +157,7 @@ export const NewsCard: React.FC<NewsCardProps> = ({
               onClick={(e) => {
                 e.stopPropagation();
                 e.preventDefault();
-                onToggleBookmark(item);
+                if (onToggleBookmark) onToggleBookmark(item);
               }}
               className={`absolute top-3 right-3 p-2 rounded-full backdrop-blur-md shadow-md z-10 transition cursor-pointer ${
                 isBookmarked
@@ -179,7 +179,7 @@ export const NewsCard: React.FC<NewsCardProps> = ({
             <button
               onClick={(e) => {
                 e.stopPropagation();
-                onToggleBookmark(item);
+                if (onToggleBookmark) onToggleBookmark(item);
               }}
               className={`p-2 rounded-full border transition cursor-pointer ${
                 isBookmarked
@@ -229,7 +229,7 @@ export const NewsCard: React.FC<NewsCardProps> = ({
         <button
           onClick={(e) => {
             e.stopPropagation();
-            onReadAudio(item);
+            if (onReadAudio) onReadAudio(item);
           }}
           className="p-2 rounded-full text-slate-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-slate-200 dark:hover:bg-zinc-700 transition cursor-pointer"
           title="Ouvir Notícia em Áudio"
